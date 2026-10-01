@@ -9,8 +9,7 @@ The sales case supports analysis of monthly sales, prices, returns, and warranty
 | File | Use |
 | --- | --- |
 | [SalesSimulationSpring2026.xlsm](SalesSimulationSpring2026.xlsm) | Macro-enabled generator for student working copies. Contains the data-generation formulas, the `Generate_Data` VBA procedure, and a response worksheet. |
-| [SalesSolution with graphs.xlsx](SalesSolution%20with%20graphs.xlsx) | Instructor reference with a worked sample and graphs. Its answers apply to the included sample data, not every independently generated dataset. |
-| [SHA256SUMS.txt](SHA256SUMS.txt) | SHA-256 checksums of the published workbooks. |
+| [SHA256SUMS.txt](SHA256SUMS.txt) | SHA-256 checksum of the published workbook. |
 | [PUBLICATION-NOTES.md](PUBLICATION-NOTES.md) | Metadata changes, original and published hashes, and verification scope. |
 
 ## Student workflow
@@ -28,13 +27,13 @@ The generator initially contains **Title Page** and four hidden worksheets: **So
 
 `Generate_Data` places a timestamp in **Solution!B4**, fixes the calculated data to values, deletes **Reference** and **Title Page**, and adds **Sales Locked** and **Warranties & Returns Locked**. These protected worksheets preserve copies of the generated data. Worksheet protection is not a substitute for assessment access controls.
 
-The sample solution contains **Solution**, **Sales**, and **Warranties & Returns**, with worked calculations and graphs. Instructors can use it to demonstrate the analytical approach. Both workbooks are publicly available in this repository; decide when students should consult the worked sample.
+The instructor workbook, recommended solutions, and grader materials are supplied separately as confidential teaching and submission materials. The instructor workbook contains **Solution**, **Sales**, and **Warranties & Returns**, with worked calculations and graphs. Its answers apply to the included sample data, not every independently generated dataset.
 
-This repository contains the supplied Excel materials and embedded VBA. It does **not** contain the Python automated-grading implementation described in the accompanying manuscript.
+This repository contains the student generator and embedded VBA. The Python grading scripts are available from the authors on request.
 
 ## Preservation and existing limitations
 
 Publication copies remove only the creator and last-modifier document metadata for anonymous review. Workbook data, formulas, formatting, charts, protection settings, and VBA were preserved. Details and hashes are in [PUBLICATION-NOTES.md](PUBLICATION-NOTES.md).
 
-The supplied sample solution has two defined names, `PriceRange` and `SalesRange`, that refer to `#REF!`; these existing definitions were not repaired. VBA execution and recalculation in Excel were not part of publication verification. Instructors should test the supplied files in their intended classroom environment before assignment.
+VBA execution and recalculation in Excel were not part of publication verification. Instructors should test the supplied files in their intended classroom environment before assignment.
 
