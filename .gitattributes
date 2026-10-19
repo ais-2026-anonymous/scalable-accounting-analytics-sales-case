@@ -7,3 +7,4 @@
 *.yml text eol=lf
 *.xlsm binary
 dist/vendor/webllm.js -text -diff
+dist/vendor/gradio.js -text -diff

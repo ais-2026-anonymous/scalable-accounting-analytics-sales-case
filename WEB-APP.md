@@ -1,12 +1,14 @@
-# Accounting Case Lab: browser practice tool
+# Autograder: browser practice tool
 
 The static `dist/` site runs the existing case computations in Python/Pyodide,
 then offers optional feedback from a Qwen3-4B model trained on synthetic case
-examples. GitHub Pages serves the site. Hugging Face serves public model files;
-it receives no workbook, student explanation, grade or generated feedback.
-The browser downloads public runtime and model assets and performs grading and
-inference locally. There is no submission endpoint, database or analytics code.
-Asset hosts may retain normal request metadata.
+examples. GitHub Pages serves the static site; Python grading runs locally.
+Optional inference runs on the public Hugging Face ZeroGPU Space
+`hunterng/Accounting-Autograder-Feedback`. It receives only the selected checker
+finding, case rules and optional student explanation. Workbook files, raw rows,
+identity fields, filename, timestamp and numerical expected answers are excluded.
+There is no application database or content logging; hosting platforms may
+retain request metadata or service logs. Client run-history recording is disabled.
 
 ## Student use
 
@@ -15,11 +17,13 @@ designated Solution boxes, recalculate and save. Select the saved workbook in
 the site. The site does not execute VBA or recalculate Excel formulas. The
 practice sample contains four deliberate mistakes and scores 6/10.
 
-The optional model needs recent desktop Chrome/Edge, WebGPU with shader-f16,
-several GB of GPU memory and browser storage, and a first download of about
-2.3 GB. Grading and rubric hints work without the model. Student work lives in
-page memory; clearing the session or refreshing discards it. Downloaded feedback
-remains under the student's control. Public model artifacts may be cached.
+Students need no WebGPU or model-weight download. One Get feedback action
+connects to the public service; the same button cancels pending feedback.
+Free ZeroGPU has queues and daily GPU quotas, so it does not guarantee classroom
+capacity or continuous availability. No paid fallback is configured. Grading
+and rubric hints remain usable if inference is unavailable. Clearing the session
+or refreshing discards local work; downloaded feedback remains on the student's
+device. Previously sent inference requests cannot be recalled from the host.
 
 ## Grading contract
 
@@ -74,8 +78,13 @@ feedback, accounting expertise or student learning gains.
 export with a separately downloaded base model and CUDA environment. The data
 generation scripts additionally require the confidential local instructor
 fixture; the supplied training JSONL files do not. The adapter and exact compressed MLC updates are published on Hugging Face
-with Apache-2.0 licensing. The worker reconstructs the tested trained tensors
-from the pinned public base, and verifies their SHA-256 before inference.
+with Apache-2.0 licensing. The retained browser worker can reconstruct the
+previously tested quantized tensors, but is no longer loaded by the student UI.
+The Space loads the pinned Qwen3-4B base in FP16 and the same pinned PEFT adapter.
+This differs from the earlier quantized browser runtime; prior browser evaluation
+does not establish hosted-model equivalence. Space source and pinned dependencies
+are in `space/`. Deploy it with `HfApi.upload_folder(..., repo_type='space')`
+using saved local credentials, never credentials in browser files.
 `tools/build_weight_deltas.py` packages exact compressed browser updates after
 export, using a pinned MLC base revision and verifying its cached files. Generated
 model payloads are ignored by Git and hosted separately on Hugging Face.
@@ -86,6 +95,7 @@ model payloads are ignored by Git and hosted separately on Hugging Face.
 GitHub Actions validates the public practice sample, rejects unsupported and
 disguised files, rejects the ungenerated simulator, checks the feedback contract,
 then publishes only `dist/`. It requires a pinned model revision before deploy.
+The Space is called anonymously through the bundled Gradio JavaScript client.
 No API key or Hugging Face token belongs in browser code or this repository.
 
 For local use:

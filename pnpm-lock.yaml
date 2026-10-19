@@ -8,6 +8,9 @@ importers:
 
   .:
     devDependencies:
+      '@gradio/client':
+        specifier: 2.7.1
+        version: 2.7.1
       '@mlc-ai/web-llm':
         specifier: 0.2.86
         version: 0.2.86
@@ -173,6 +176,10 @@ packages:
     cpu: [x64]
     os: [win32]
 
+  '@gradio/client@2.7.1':
+    resolution: {integrity: sha512-NdxHhkWKE+p+6NLgDrGKMoyF1Ldcl+tRKDyy2x9HKExqHUj/LpsR0UY46x6lLAM+QHAspHa2E6cFjkJMCVb6gQ==}
+    engines: {node: '>=18.0.0'}
+
   '@mlc-ai/web-llm@0.2.86':
     resolution: {integrity: sha512-plciXBCYtY7iTKHzEcsqOfSO+s5u8NqMYFPnHmRbsN8CEdKcolgXIoGLPbzO6FtJHV43m7YP00x6qQ6Kb8CJJw==}
 
@@ -180,6 +187,9 @@ packages:
     resolution: {integrity: sha512-bbPBYYrtZbkt6Os6FiTLCTFxvq4tt3JKall1vRwshA3fdVztsLAatFaZobhkBC8/BrPetoa0oksYoKXoG4ryJg==}
     engines: {node: '>=18'}
     hasBin: true
+
+  fetch-event-stream@0.1.6:
+    resolution: {integrity: sha512-GREtJ5HNikdU2AXtZ6E/5bk+aslMU6ie5mPG6H9nvsdDkkHQ6m5lHwmmmDTOBexok9hApQ7EprsXCdmz9ZC68w==}
 
   loglevel@1.9.2:
     resolution: {integrity: sha512-HgMmCqIJSAKqo68l0rS2AanEWfkxaZ5wNiEFb5ggm08lDs9Xl2KxBlX3PTcaD2chBM1gXAYf491/M2Rv8Jwayg==}
@@ -265,6 +275,10 @@ snapshots:
   '@esbuild/win32-x64@0.25.12':
     optional: true
 
+  '@gradio/client@2.7.1':
+    dependencies:
+      fetch-event-stream: 0.1.6
+
   '@mlc-ai/web-llm@0.2.86':
     dependencies:
       loglevel: 1.9.2
@@ -297,5 +311,7 @@ snapshots:
       '@esbuild/win32-arm64': 0.25.12
       '@esbuild/win32-ia32': 0.25.12
       '@esbuild/win32-x64': 0.25.12
+
+  fetch-event-stream@0.1.6: {}
 
   loglevel@1.9.2: {}

@@ -2,12 +2,12 @@
 <html lang="en">
 <head>
  <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
- <meta name="description" content="Practice the sales, returns and warranty accounting case with local Excel checking and on-device feedback.">
+ <meta name="description" content="Practice the sales, returns and warranty accounting case with Python Excel checking and optional AI feedback.">
  <title>Autograder</title>
  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Crect width='40' height='40' rx='10' fill='%23162c32'/%3E%3Cpath d='M10 11h8v8h-8zm12 0h8v8h-8zM10 23h8v8h-8z' fill='%23f4f2eb'/%3E%3Cpath d='m23 27 3 3 6-9' fill='none' stroke='%23c9dfb3' stroke-width='3'/%3E%3C/svg%3E">
- <link rel="stylesheet" href="styles.css?v=0.4.1">
+ <link rel="stylesheet" href="styles.css?v=0.5.0">
 
- <script type="module" src="app.js?v=0.4.1"></script>
+ <script type="module" src="app.js?v=0.5.0"></script>
 </head>
 <body>
  <a class="skip" href="#main">Skip to workspace</a>
@@ -20,43 +20,40 @@
    <button class="nav-button" data-view="mistakes"><span>⌘</span> Mistake library <small>03</small></button>
   </nav>
   <div class="sidebar-case"><span class="tiny-label">CURRENT CASE</span><h3>Sales, returns<br>& warranties</h3><p>Two products. Ten years.<br>Ten technical answers.</p><div class="case-tags"><span>EXCEL</span><span>2011–2020</span></div></div>
-  <div class="sidebar-bottom"><span class="privacy-dot"></span> Your work stays on this device.<p>No account. No grade uploads.</p><span class="prototype">RESEARCH PROTOTYPE · v0.3</span></div>
  </aside>
  <div class="main-shell">
-  <header class="topbar"><div><span class="breadcrumb">Autograder</span><span class="slash">/</span><strong id="current-view">Workbook review</strong></div><span class="local-tag"><span class="privacy-dot"></span> LOCAL PRACTICE</span></header>
+  <header class="topbar"><div><span class="breadcrumb">Autograder</span><span class="slash">/</span><strong id="current-view">Workbook review</strong></div><span class="local-tag"><span class="privacy-dot"></span> PRACTICE</span></header>
   <main id="main">
    <section id="view-workspace" class="view">
-    <div class="page-heading"><div><span class="eyebrow">THE SALES PROJECT</span><h1>Review your analysis.<br><span>Understand your next step.</span></h1><p>Check your Excel calculations, reflect on the rubric, and get<br class="desktop-br"> accounting feedback tailored to your work.</p></div><div class="heading-art" aria-hidden="true"><div class="art-sheet"><span>A</span><span>B</span><span>C</span><span>2012</span><b class="art-bar bar1"></b><span>2016</span><b class="art-bar bar2"></b><span>2020</span><b class="art-bar bar3"></b><div class="art-tick">✓</div></div><span class="art-caption">FROM DATA TO JUDGMENT</span></div></div>
-    <div class="steps"><span class="step active"><b>1</b> Add workbook</span><span class="step-line"></span><span class="step" id="step-review"><b>2</b> Review the rubric</span><span class="step-line"></span><span class="step" id="step-reflect"><b>3</b> Reflect & revise</span></div>
+    <div class="page-heading"><h1>Check your workbook</h1></div>
     <div class="workspace-grid">
      <div class="work-column">
       <section class="panel upload-panel"><div class="panel-heading"><div><span class="section-number">01</span><h2>Your workbook</h2></div><span class="subtle-pill" id="file-status">Ready when you are</span></div>
        <label class="dropzone" id="dropzone" tabindex="0" role="button" aria-label="Choose Excel workbook"><input type="file" id="file-input" accept=".xlsx,.xlsm" hidden><span class="upload-icon" aria-hidden="true">↥</span><strong>Drop your Excel workbook here</strong><span>or <u>browse your files</u></span><small>.xlsx or .xlsm · up to 20 MB</small></label>
        <div id="file-info" hidden></div>
-       <div class="sample-row"><span>Explore before you upload.</span><button class="text-button" id="sample-button">Try a practice sample <span>↗</span></button></div>
+       <div class="sample-row"><button class="text-button" id="sample-button">Try a sample ↗</button></div>
        <details class="upload-help"><summary>Preparing your case workbook</summary><p>Use the supplied two-product sales case. In desktop Excel, run Generate Data, complete the highlighted Solution cells, recalculate, and save. A Python grader runs locally in this browser and reads saved values; it does not run macros or recalculate arbitrary Excel formulas.</p><a href="assets/SalesSimulationSpring2026.xlsm" download>Download the original case workbook</a><p>The practice sample has deliberately mixed answers and is not a submission or a common answer key.</p></details>
        <div class="policy-row"><label for="grading-policy">Grading policy</label><select id="grading-policy"><option value="concept">Concept checks · normalized values</option><option value="legacy">Original script · compatibility check</option></select></div>
        <p class="policy-note" id="policy-note">Accepts equivalent percentages and decimals. Technical answers receive one practice point each.</p>
        <div id="upload-message" role="status" aria-live="polite"></div>
       </section>
       <section class="panel" id="results-panel"><div class="panel-heading"><div><span class="section-number">02</span><h2>Rubric review</h2></div><button class="text-button" data-go="rubric">View rubric ↗</button></div>
-       <div id="results" class="empty-results"><span class="empty-grid" aria-hidden="true">▤</span><h3>A clearer view of your work</h3><p>Your practice score, criterion-level checks, and<br>next steps will appear here.</p><div class="empty-rule"><span>Monthly totals</span><span>Prices & clearance</span><span>Claim rates</span></div></div>
+       <div id="results" class="empty-results"><span class="empty-grid" aria-hidden="true">▤</span><p>Upload a workbook to see results.</p></div>
       </section>
      </div>
      <div class="side-column">
-      <section class="coach-card"><div class="coach-top"><span class="sparkle" aria-hidden="true">✳</span><span>YOUR FEEDBACK COACH</span><span class="beta">LOCAL AI</span></div><h2>Work through<br>the reasoning.</h2><p>The model writes a new explanation, an Excel revision step, and a follow-up question using your mistakes and your own explanation.</p>
-       <label class="coach-label" for="model-select">On-device model</label><select id="model-select"><option value="CaseLab-Qwen3-4B-SFT-q4f16_1">Accounting feedback model</option></select>
-       <button class="button coach-load" id="load-model">Enable AI feedback <span>→</span></button><progress id="model-progress" max="1" value="0" hidden></progress><p class="model-status" id="model-status" role="status">Hosted on Hugging Face. Feedback runs privately in your browser.</p>
-       <div class="coach-divider"></div><label class="coach-label" for="focus-select">Focus your feedback</label><select id="focus-select" disabled><option>Check a workbook first</option></select>
-       <label class="coach-label" for="reflection">Explain your approach <span>optional</span></label><textarea id="reflection" maxlength="1200" rows="3" placeholder="I matched each claim month to…"></textarea>
-       <button class="button button-light" id="ask-coach" disabled>Generate personalized feedback <span>↗</span></button><button class="text-button stop-button" id="stop-coach" hidden>Stop generation</button>
-       <div id="coach-output" aria-live="polite"><p class="coach-empty">Check a workbook to unlock a case-specific prompt. The model writes personalized feedback; it does not change your score.</p></div>
-       <button class="text-button coach-unload" id="unload-model" hidden>Unload model from memory</button>
+      <section class="coach-card">
+       <h2>AI feedback</h2>
+       <label class="coach-label" for="focus-select">Answer</label><select id="focus-select" disabled><option>Upload a workbook first</option></select>
+       <label class="coach-label" for="reflection">Your explanation <span>optional</span></label><textarea id="reflection" maxlength="1200" rows="3" placeholder="How did you calculate this answer?"></textarea>
+       <p class="privacy-note">This explanation and its grading checks are sent to Hugging Face.</p>
+       <button class="button button-light" id="ask-coach" disabled>Get feedback</button>
+       <p class="model-status" id="model-status" role="status"></p>
+       <div id="coach-output" aria-live="polite"></div>
       </section>
-      <section class="note-card"><span class="tiny-label">A GOOD QUESTION TO ASK</span><h3>When did the sale happen?</h3><p>Returns arrive one month later. Warranty claims arrive two months later. The originating sale anchors both calculations.</p><div class="timeline"><span><b>t</b>Sale</span><i>→</i><span><b>t + 1</b>Return</span><i>→</i><span><b>t + 2</b>Warranty</span></div></section>
      </div>
     </div>
-    <div class="workspace-footer"><span>Practice feedback supports your learning. Submit your final work through your course LMS.</span><button class="text-button" id="clear-session">Clear this session</button></div>
+    <div class="workspace-footer"><button class="text-button" id="clear-session">Clear this session</button></div>
    </section>
    <section id="view-rubric" class="view" hidden><span class="eyebrow">ASSESSMENT CRITERIA</span><h1>The grading rubric</h1><div id="rubric-list"></div></section>
    <section id="view-mistakes" class="view" hidden><span class="eyebrow">LEARNING FROM ERRORS</span><h1>The mistake library</h1><p class="intro">Common errors in this case, organized by the reasoning to revisit. A matching number suggests a possible method; it cannot prove how you worked.</p><div class="library-tools"><label for="mistake-search">Find a mistake or concept</label><input id="mistake-search" type="search" placeholder="Try “lag”, “clearance”, or “denominator”…"></div><div id="mistake-list" class="mistake-grid"></div><p class="small-note">The taxonomy covers technical answer checks only. No image, chart, or report evaluation is performed.</p></section>

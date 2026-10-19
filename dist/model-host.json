@@ -2,6 +2,10 @@
   "repository": "hunterng/CaseLab-Qwen3-4B-SFT-q4f16_1-MLC",
   "revision": "091044502ff2d6c32cf222ff9799eeb94155791a",
   "format": "MLC q4f16_1",
-  "student_content_uploaded": false,
-  "weight_delivery": "exact-delta-v1"
+  "student_content_uploaded": true,
+  "student_upload_scope": ["selected grading checks", "optional explanation"],
+  "inference": "huggingface-zerogpu",
+  "feedback_space": "hunterng/Accounting-Autograder-Feedback",
+  "weight_delivery": "exact-delta-v1",
+  "weight_delivery_note": "Retained export for reproducibility; the student UI calls hosted FP16+PEFT inference and does not load this export."
 }

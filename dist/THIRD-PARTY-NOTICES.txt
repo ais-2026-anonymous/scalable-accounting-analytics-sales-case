@@ -1,4 +1,4 @@
-Accounting Case Lab prototype — third-party components
+Autograder prototype — third-party components
 
 MLC WebLLM 0.2.86 (Apache-2.0)
 https://github.com/mlc-ai/web-llm
@@ -9,7 +9,8 @@ Qwen3-4B (Apache-2.0), locally fine-tuned with synthetic case examples
 https://huggingface.co/Qwen/Qwen3-4B
 The deployed weights contain the synthetic-case fine-tune. The model license
 and training/export reports accompany the static model assets.
-The official MLC Qwen3-4B WebGPU library is fetched at runtime.
+The MLC browser runtime is retained for reproducibility and is no longer loaded
+by the student interface. Hosted inference uses the pinned FP16 base and adapter.
 https://huggingface.co/mlc-ai/Qwen3-4B-q4f16_1-MLC
 
 Pyodide 0.27.7 / CPython
@@ -24,3 +25,8 @@ deployed. Its package retains its upstream license in node_modules.
 Original Excel case, VBA and grading scripts: existing project authors.
 Those materials retain their existing ownership and distribution permissions.
 Including the user's code for this prototype assigns no new public license.
+
+Gradio JavaScript Client 2.7.1 (Apache-2.0)
+https://github.com/gradio-app/gradio
+Bundled as dist/vendor/gradio.js. License: dist/vendor/GRADIO-CLIENT-LICENSE.txt
+The public client calls the hosted feedback service without an API key.

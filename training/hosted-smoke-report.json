@@ -1,0 +1,19 @@
+{
+  "date": "2026-10-19",
+  "space": "hunterng/Accounting-Autograder-Feedback",
+  "space_revision": "a9a9f31bf679dcaa833f30ad0005001bae3b8cbc",
+  "base_model": "Qwen/Qwen3-4B",
+  "base_revision": "1cfa9a7208912126459214e8b04321603b3df60c",
+  "adapter_revision": "091044502ff2d6c32cf222ff9799eeb94155791a",
+  "runtime": "Free ZeroGPU; FP16 base plus existing synthetic LoRA adapter",
+  "checks": [
+    "Two anonymous browser generations returned different feedback for B19 same-month joining versus an omitted year filter; the practice score remained 6/10.",
+    "Browser inference worked with navigator.gpu disabled and fetched no model weights or WebLLM runtime.",
+    "Captured inference payloads contained selected tutor context and optional explanation; no workbook, identifiers, numeric actual/expected answers, filename or timestamp fields.",
+    "A later response repeated an internal instruction. The prompt was shortened and a rejection guard added. The updated year-filter request returned accounting-focused feedback through the authenticated owner test client.",
+    "For B12, a matching output plus a learner-reported multiplication method first produced an unsupported claim about a saved formula. A guard rejected this and one generated revision stated that the actual formula was unknown, distinguished multiplication from division, and preserved the correct-output status.",
+    "Anonymous testing reached the daily GPU quota. The UI displayed a clear daily-limit message and retained Python results.",
+    "One-button cancellation, unsupported-file rejection, mobile overflow, grading without remote POST requests, seven feedback-contract tests and four public Python tests were checked."
+  ],
+  "limits": "Small developer-authored smoke checks, not an independent evaluation or evidence of accounting expertise or learning gains. Outputs vary from the former quantized browser model. Guarded failures can still yield no AI response after one retry. The Node evaluation client's close operation emitted a cleanup error after generation assertions completed; the browser client does not call that close path. Instructor validation and classroom capacity testing remain necessary."
+}

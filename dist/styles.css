@@ -6,3 +6,5 @@
 @media(prefers-reduced-motion:reduce){*{scroll-behavior:auto!important;transition:none!important}}
 
 .checker-anchor{font-size:11px;line-height:1.65;padding:12px;border-left:3px solid #c8dcb0;background:#193933;color:#dce8d3;margin-top:18px}.checker-anchor strong{font-size:9px;letter-spacing:1px;color:#c8dcb0}
+
+#model-status:empty{display:none}.coach-card h2{margin:0 0 24px}.coach-card .privacy-note{font-size:12px;line-height:1.6;opacity:.8;margin:12px 0 20px}.page-heading{min-height:0;margin-bottom:32px}.page-heading h1{margin:0}.workspace-footer{justify-content:flex-end}

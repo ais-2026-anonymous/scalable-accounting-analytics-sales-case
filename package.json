@@ -1,13 +1,15 @@
 {
   "name": "accounting-case-lab",
-  "version": "0.4.0",
+  "version": "0.5.0",
   "private": true,
   "type": "module",
   "packageManager": "pnpm@10.20.0",
   "scripts": {
-    "test": "node --test tests/coach.test.mjs"
+    "test": "node --test tests/coach.test.mjs",
+    "build:feedback-client": "node tools/build-feedback-client.mjs"
   },
   "devDependencies": {
+    "@gradio/client": "2.7.1",
     "@mlc-ai/web-llm": "0.2.86",
     "esbuild": "0.25.12"
   }

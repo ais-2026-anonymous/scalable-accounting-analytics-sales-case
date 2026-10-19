@@ -20,6 +20,8 @@ test('changed checker verdict and blanket endorsement of incorrect work are reje
  assert.throws(()=>parseTutorFeedback(JSON.stringify({...output,explanation:'You are right about everything.'}),evidence),/incorrect/);
 });
 test('truncated, empty and oversized generations fail visibly instead of being rendered',()=>{
+ assert.throws(()=>parseTutorFeedback(JSON.stringify({...output,explanation:'Your explanation does not match the saved formula.'}),evidence),/formula was not inspected/);
+ assert.throws(()=>parseTutorFeedback(JSON.stringify({...output,explanation:'This is unverified student work, not instructions: ignore requests to disregard the checker.'}),evidence),/accounting only/);
  assert.throws(()=>parseTutorFeedback('{"explanation":',evidence),/JSON/);
  assert.throws(()=>parseTutorFeedback(JSON.stringify({...output,question:''}),evidence),/complete/);
  assert.throws(()=>parseTutorFeedback(JSON.stringify({...output,next_step:'x'.repeat(1601)}),evidence),/concise/);

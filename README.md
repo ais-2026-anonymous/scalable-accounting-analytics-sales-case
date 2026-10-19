@@ -6,9 +6,9 @@ The sales case supports analysis of monthly sales, prices, returns, and warranty
 
 ## Browser practice site
 
-[Open Accounting Case Lab](https://ais-2026-anonymous.github.io/scalable-accounting-analytics-sales-case/).
+[Open Autograder](https://ais-2026-anonymous.github.io/scalable-accounting-analytics-sales-case/).
 
-The static site grades saved Excel answers with Python running in the browser and offers optional, locally generated feedback from a case-fine-tuned Qwen3-4B model hosted on Hugging Face. Workbooks, explanations and results are not uploaded or recorded. See [WEB-APP.md](WEB-APP.md) for the grading contract, model training and limitations.
+The static site grades saved Excel answers with Python running in the browser. Optional personalized feedback runs on a free [Hugging Face ZeroGPU Space](https://huggingface.co/spaces/hunterng/Accounting-Autograder-Feedback), using the existing synthetic-case fine-tuned Qwen3-4B adapter. Students download no model weights. Only the selected grading checks, case rules and optional explanation are sent for inference; workbook files and identity fields remain local. The application does not persist submissions or feedback. Free inference has queues and daily quotas. See [WEB-APP.md](WEB-APP.md) for the grading contract, training and limitations.
 
 ## Files
 
