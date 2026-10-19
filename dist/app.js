@@ -1,16 +1,16 @@
-import {gradePython,clearPython} from './python-client.js?v=0.4.0';
-import {ITEMS,RUBRIC,TAXONOMY,feedbackEvidence} from './grader.js?v=0.4.0';
-import {tutorRequest,parseTutorFeedback,checkerAnchor} from './coach.js?v=0.4.0';
+import {gradePython,clearPython} from './python-client.js?v=0.4.1';
+import {ITEMS,RUBRIC,TAXONOMY,feedbackEvidence} from './grader.js?v=0.4.1';
+import {tutorRequest,parseTutorFeedback,checkerAnchor} from './coach.js?v=0.4.1';
 const $=id=>document.getElementById(id);
 const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 let workbook=null,result=null,engine=null,modelWorker=null,modelBusy=false,generating=false,session=0;
 let selectedName='';
 const STATUS={correct:'Matches',incorrect:'Review',missing:'Blank',unavailable:'Recalculate'};
 function view(name){
- if(!['workspace','rubric','mistakes','method'].includes(name))name='workspace';
+ if(!['workspace','rubric','mistakes'].includes(name))name='workspace';
  document.querySelectorAll('.view').forEach(e=>e.hidden=e.id!==`view-${name}`);
  document.querySelectorAll('[data-view]').forEach(e=>{e.classList.toggle('active',e.dataset.view===name);e.setAttribute('aria-current',e.dataset.view===name?'page':'false');});
- $('current-view').textContent={workspace:'Workbook review',rubric:'Grading rubric',mistakes:'Mistake library',method:'How it works'}[name];
+ $('current-view').textContent={workspace:'Workbook review',rubric:'Grading rubric',mistakes:'Mistake library'}[name];
  history.replaceState(null,'',`#${name}`);window.scrollTo(0,0);
 }
 document.querySelectorAll('[data-view],[data-go]').forEach(e=>e.addEventListener('click',()=>view(e.dataset.view??e.dataset.go)));
@@ -72,12 +72,12 @@ function clearResult(){
 $('clear-session').addEventListener('click',async()=>{++session;clearResult();clearPython();message('Your workbook, score, explanation, and feedback have been cleared from this session.');$('file-status').textContent='Ready when you are';if(engine)await engine.resetChat();});
 function downloadFeedback(){
  if(!result)return;
- const lines=['CASELAB — PRIVATE PRACTICE FEEDBACK','Sales, returns & warranties',`Policy: ${result.mode}`,`Technical practice score: ${result.earned}/10${result.unavailable?' (provisional: saved formula results unavailable)':''}`,'No course grade is submitted.','',...result.warnings,''];
+ const lines=['AUTOGRADER — PRIVATE PRACTICE FEEDBACK','Sales, returns & warranties',`Policy: ${result.mode}`,`Technical practice score: ${result.earned}/10${result.unavailable?' (provisional: saved formula results unavailable)':''}`,'No course grade is submitted.','',...result.warnings,''];
  lines.push('PYTHON VALIDATION',...Object.entries(result.integrity).map(([k,v])=>`${k}: ${v}`),`Source-data fingerprint: ${result.datasetFingerprint}`,'');
  for(const r of result.results){lines.push(`${r.cell} | ${r.title} | ${STATUS[r.status]}`,`Saved answer: ${fmt(r.actual,r.kind)}`,r.message,...r.mistakes.map(m=>`Possible pattern: ${m.title}. ${m.hint}`),'');}
  lines.push('Numerical pattern matches are hypotheses, not proof of the method used.','Only the ten designated technical answer cells are assessed.');
  const output=$('coach-output').querySelector('.feedback-box[data-generated="true"]');if(output)lines.push('','LOCAL MODEL FEEDBACK (formative suggestion)',output.textContent);
- const blob=new Blob([lines.join('\n')],{type:'text/plain;charset=utf-8'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='caselab-feedback.txt';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);
+ const blob=new Blob([lines.join('\n')],{type:'text/plain;charset=utf-8'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='autograder-feedback.txt';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);
 }
 async function loadModel(){
  if(modelBusy||generating)return;modelBusy=true;$('load-model').disabled=true;$('model-select').disabled=true;$('model-progress').hidden=false;
@@ -87,24 +87,24 @@ async function loadModel(){
   if(engine){await engine.unload();modelWorker?.terminate();engine=null;}
   let model=$('model-select').value;
   if(!adapter.features.has('shader-f16'))throw Error('This trained model requires shader-f16 support. Python grading and built-in hints remain available.');
-  $('model-status').textContent='Loading the local inference engine…';
-  const {CreateWebWorkerMLCEngine,prebuiltAppConfig}=await import('./vendor/webllm.js?v=0.4.0');
+  $('model-status').textContent='Preparing AI feedback…';
+  const {CreateWebWorkerMLCEngine,prebuiltAppConfig}=await import('./vendor/webllm.js?v=0.4.1');
   const base=prebuiltAppConfig.model_list.find(x=>x.model_id==='Qwen3-4B-q4f16_1-MLC');
-  const hostResponse=await fetch(new URL('model-host.json?v=0.4.0',import.meta.url));
+  const hostResponse=await fetch(new URL('model-host.json?v=0.4.1',import.meta.url));
   if(!hostResponse.ok)throw Error('The feedback model hosting configuration is unavailable.');
   const host=await hostResponse.json();
   if(!/^[a-f0-9]{40}$/.test(host.revision??''))throw Error('The Hugging Face model publication is not configured yet. Python grading remains available.');
   const modelUrl=`https://huggingface.co/${host.repository}/resolve/${host.revision}/`;
   const appConfig={...prebuiltAppConfig,model_list:[{...base,model:modelUrl,model_id:'CaseLab-Qwen3-4B-SFT-q4f16_1'}]};
-  modelWorker=new Worker(new URL('./llm-worker.js?v=0.4.0',import.meta.url),{type:'module'});
-  engine=await CreateWebWorkerMLCEngine(modelWorker,model,{appConfig,initProgressCallback:p=>{$('model-progress').value=p.progress??0;$('model-status').textContent=p.text??'Loading model files…';}}, {context_window_size:4096});
-  $('model-status').textContent=`Ready · ${model.split('-q')[0]} · runs locally on this device. Model files may be cached for later visits.`;
-  $('load-model').textContent='Model ready ✓';$('unload-model').hidden=false;$('ask-coach').disabled=!result?.valid;
- }catch(e){engine=null;modelWorker?.terminate();modelWorker=null;$('model-status').textContent=`Model could not load: ${/quota/i.test(e.message??String(e))?'Browser storage quota reached. Open a regular Chrome or Edge window with several GB of free browser storage. Python grading remains available':e.message??String(e)}. Use the rubric’s built-in hints meanwhile.`;$('load-model').textContent='Retry model download ↓';}
+  modelWorker=new Worker(new URL('./llm-worker.js?v=0.4.1',import.meta.url),{type:'module'});
+  engine=await CreateWebWorkerMLCEngine(modelWorker,model,{appConfig,initProgressCallback:p=>{$('model-progress').value=p.progress??0;$('model-status').textContent=`Preparing AI feedback · ${Math.round((p.progress??0)*100)}%`;}}, {context_window_size:4096});
+  $('model-status').textContent='Ready · AI feedback runs privately on this device.';
+  $('load-model').textContent='AI feedback ready ✓';$('unload-model').hidden=false;$('ask-coach').disabled=!result?.valid;
+ }catch(e){engine=null;modelWorker?.terminate();modelWorker=null;$('model-status').textContent=`Model could not load: ${/quota/i.test(e.message??String(e))?'Browser storage quota reached. Open a regular Chrome or Edge window with several GB of free browser storage. Python grading remains available':e.message??String(e)}. Use the rubric’s built-in hints meanwhile.`;$('load-model').textContent='Retry AI feedback →';}
  finally{modelBusy=false;$('load-model').disabled=false;$('model-select').disabled=false;$('model-progress').hidden=true;}
 }
 $('load-model').addEventListener('click',loadModel);
-$('unload-model').addEventListener('click',async()=>{if(generating)return;if(engine)await engine.unload();modelWorker?.terminate();engine=null;modelWorker=null;$('unload-model').hidden=true;$('ask-coach').disabled=true;$('load-model').textContent='Load feedback model ↓';$('model-status').textContent='Unloaded from memory. Browser-cached model files remain available for the next load.';});
+$('unload-model').addEventListener('click',async()=>{if(generating)return;if(engine)await engine.unload();modelWorker?.terminate();engine=null;modelWorker=null;$('unload-model').hidden=true;$('ask-coach').disabled=true;$('load-model').textContent='Enable AI feedback →';$('model-status').textContent='AI feedback is off. Enable it again when you need it.';});
 $('stop-coach').addEventListener('click',()=>{++session;engine?.interruptGenerate();$('coach-output').innerHTML='<p class="coach-empty">Generation stopped. You can revise your explanation and try again.</p>';});
 $('reflection').addEventListener('input',()=>{++session;if(generating)engine?.interruptGenerate();if(result)$('coach-output').innerHTML='<p class="coach-empty">Your explanation changed. Generate feedback for this version when you are ready.</p>';});
 $('focus-select').addEventListener('change',()=>{++session;if(generating)engine?.interruptGenerate();$('coach-output').innerHTML='<p class="coach-empty">Request guided feedback for this selected answer.</p>';});
