@@ -5,9 +5,9 @@
  <meta name="description" content="Practice the sales, returns and warranty accounting case with Python Excel checking and optional AI feedback.">
  <title>ACC3000</title>
  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Crect width='40' height='40' rx='10' fill='%23162c32'/%3E%3Cpath d='M10 11h8v8h-8zm12 0h8v8h-8zM10 23h8v8h-8z' fill='%23f4f2eb'/%3E%3Cpath d='m23 27 3 3 6-9' fill='none' stroke='%23c9dfb3' stroke-width='3'/%3E%3C/svg%3E">
- <link rel="stylesheet" href="styles.css?v=0.5.2">
+ <link rel="stylesheet" href="styles.css?v=0.5.3">
 
- <script type="module" src="app.js?v=0.5.2"></script>
+ <script type="module" src="app.js?v=0.5.3"></script>
 </head>
 <body>
  <a class="skip" href="#main">Skip to workspace</a>
@@ -41,7 +41,8 @@
      </div>
      <div class="side-column">
       <section class="coach-card">
-       <h2>Feedback</h2>
+       <h2>AI feedback</h2>
+       <p>Each answer cell is linked to its rubric criterion and Python grading checks. AI feedback addresses the selected part with an explanation, a next step, and a follow-up question.</p>
        <label class="coach-label" for="focus-select">Answer</label><select id="focus-select" disabled><option>Upload a workbook first</option></select>
        <label class="coach-label" for="reflection">Your explanation <span>optional</span></label><textarea id="reflection" maxlength="1200" rows="3" placeholder="How did you calculate this answer?"></textarea>
        <p class="privacy-note">This explanation and its grading checks are sent to Hugging Face.</p>
