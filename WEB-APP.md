@@ -76,6 +76,9 @@ generation scripts additionally require the confidential local instructor
 fixture; the supplied training JSONL files do not. The adapter and exact compressed MLC updates are published on Hugging Face
 with Apache-2.0 licensing. The worker reconstructs the tested trained tensors
 from the pinned public base, and verifies their SHA-256 before inference.
+`tools/build_weight_deltas.py` packages exact compressed browser updates after
+export, using a pinned MLC base revision and verifying its cached files. Generated
+model payloads are ignored by Git and hosted separately on Hugging Face.
 `dist/model-host.json` pins the exact model repository commit.
 
 ## Deployment and verification
