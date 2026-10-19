@@ -1,0 +1,52 @@
+{
+  "source": "current two-product sales autograder",
+  "source_files": [
+    "SalesSolution.xlsx",
+    "4-copy-csv-to-solution.py",
+    "6-compare-csv-to-csv-gen-report.py",
+    "8-compile_score.py"
+  ],
+  "case": "Current two-product sales / returns / warranty case, 2011\u20132020",
+  "answer_cells": [
+    "B7",
+    "B8",
+    "B12",
+    "B13",
+    "B14",
+    "B15",
+    "B19",
+    "B20",
+    "B24",
+    "B25"
+  ],
+  "formula_port": {
+    "monthly_revenue": "SUMIF over product revenue and continuous year-month index",
+    "monthly_price": "monthly revenue / monthly units",
+    "clearance": "monthly price below 120-month mean, recurring month",
+    "return_rate": "claims booked at t+1 / units sold at t",
+    "warranty_rate": "claims booked at t+2 / units sold at t"
+  },
+  "compatibility": "Extract saved/displayed answers, strip currency separators, strip percent signs as in script 6, lowercase month strings, round numbers to one decimal with ties-to-even as in script 8. Because the source pipeline exports formatted CSV, percentage versus decimal formatting can change the legacy result. Legacy mode preserves that behavior for comparison.",
+  "concept_policy": "Normalize 8.38% and 0.0838 identically; absolute tolerance 0.05 dollars for totals/prices and 0.00005 for rates (0.005 percentage points). Require full English month names, ignoring case and surrounding whitespace.",
+  "adaptations": [
+    "Ten designated Solution answer cells only; answers elsewhere do not earn credit",
+    "Unsupported file formats, disguised OOXML files, altered case layout, missing metadata or missing protection are rejected with zero",
+    "Required generated sheets include both protected source copies; no editable-source fallback for submissions",
+    "Frozen Solution!B4 timestamp must be present, plausible, and locked on a protected Solution sheet",
+    "Identity fields B1:B3 are required for structural validation; never sent to the LLM",
+    "Formula without cached value receives zero until recalculated and saved; marked unavailable rather than diagnosed",
+    "No VBA, arbitrary formula evaluation, OCR, screenshot grading, image assessment, COM automation or CSV intermediates"
+  ],
+  "prototype_points": "One point per technical answer, ten points total. These display weights are a prototype choice; the legacy script exports correctness flags rather than a published ten-point rubric.",
+  "wrong_answer_models_source": "original common-mistake grading materials / Autograding Program - Deliverables / Deliverables / 2B. Sales Simulation Project - Additional function to grade common mistake / Solution file / solution_template.xlsm, plus explicitly identified prototype extensions. Numerical matches are hypotheses, not proof of a student's method.",
+  "version": "0.3.0",
+  "engine": "Python 3 via Pyodide 0.27.7 in a browser Web Worker; no JavaScript answer scoring",
+  "visual_assessment": "Excluded. No report, graph, image, chart or professional-judgment points.",
+  "integrity_limits": {
+    "seed": "The supplied macro does not store a reproducible random seed; no seed verification claim is made.",
+    "timestamp": "Presence, parseability, plausibility and cell/sheet protection are checked; these do not cryptographically authenticate generation time.",
+    "fingerprint": "SHA-256 over original daily source values and monthly claims; an identifier, not a reproducible seed.",
+    "duplicates": "A stateless single-file checker cannot compare against other students without trusted cohort records.",
+    "authenticity": "Excel sheet protection is a workflow check, not proof that protected values are authentic."
+  }
+}

@@ -4,6 +4,12 @@ Excel materials accompanying *Scalable Data Analytics Pedagogy in Accounting: Ra
 
 The sales case supports analysis of monthly sales, prices, returns, and warranty claims using randomized Excel data.
 
+## Browser practice site
+
+[Open Accounting Case Lab](https://ais-2026-anonymous.github.io/scalable-accounting-analytics-sales-case/).
+
+The static site grades saved Excel answers with Python running in the browser and offers optional, locally generated feedback from a case-fine-tuned Qwen3-4B model hosted on Hugging Face. Workbooks, explanations and results are not uploaded or recorded. See [WEB-APP.md](WEB-APP.md) for the grading contract, model training and limitations.
+
 ## Files
 
 | File | Use |
@@ -29,7 +35,7 @@ The generator initially contains **Title Page** and four hidden worksheets: **So
 
 The instructor workbook, recommended solutions, and grader materials are supplied separately as confidential teaching and submission materials. The instructor workbook contains **Solution**, **Sales**, and **Warranties & Returns**, with worked calculations and graphs. Its answers apply to the included sample data, not every independently generated dataset.
 
-This repository contains the student generator and embedded VBA. The Python grading scripts are available from the authors on request.
+This repository contains the student generator, embedded VBA, browser Python grader and synthetic feedback-model training materials. Confidential instructor workbooks, answer keys and original batch-grading materials are supplied separately.
 
 ## Preservation and existing limitations
 

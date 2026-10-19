@@ -1,0 +1,24 @@
+[
+  {
+    "file": "4-copy-csv-to-solution.py",
+    "sha256": "e85d187dfe56168d82861a9510f77de580d4683de12bf21f8c33482c8cb7c046"
+  },
+  {
+    "file": "6-compare-csv-to-csv-gen-report.py",
+    "sha256": "1ab5fddb5d5be544ff4eff60c62c477ef34b90b70c97fd141a73cbb119fe4349"
+  },
+  {
+    "file": "8-compile_score.py",
+    "sha256": "3e097477df04eecddab324e45ca05cfc746de3d2292b7e12e10de4ed998ac7b9"
+  },
+  {
+    "file": "SalesSolution.xlsx",
+    "sha256": "b04ecf7d10ee55e4aec2688c7fb632ce9026c2358c024bbd5b98eeb3e1b6e2c4",
+    "note": "Read for formula mapping; confidential instructor workbook is not distributed with the site."
+  },
+  {
+    "file": "3b-move-invalid-files.py",
+    "sha256": "40f473b575817550eefe64bc38ead618e99b89c79c4a68bd142111526088ff5a",
+    "note": "Legacy missing-sheet validation source; adapted without its destructive file-moving workflow."
+  }
+]

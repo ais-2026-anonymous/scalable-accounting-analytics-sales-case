@@ -1,0 +1,15 @@
+{
+  "base_compatibility": {
+    "packed_word_agreement": 0.9903076171875,
+    "int4_value_agreement": 0.9987548828125,
+    "maximum_int4_difference": 1
+  },
+  "parameters": 435,
+  "bytes": 2262920192,
+  "shard_parts": 182,
+  "maximum_part_bytes": 20971520,
+  "dtype": "q4f16_1",
+  "trained_weights": true,
+  "probe_mean_abs_weight_update": 2.6023952159448527e-05,
+  "probe_quantized_words_changed_fraction": 0.032049560546875
+}

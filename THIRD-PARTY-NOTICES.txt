@@ -1,0 +1,26 @@
+Accounting Case Lab prototype — third-party components
+
+MLC WebLLM 0.2.86 (Apache-2.0)
+https://github.com/mlc-ai/web-llm
+The bundled browser runtime retains dependency license notices at the end of
+dist/vendor/webllm.js. Full license: dist/vendor/WEBLLM-LICENSE.txt
+
+Qwen3-4B (Apache-2.0), locally fine-tuned with synthetic case examples
+https://huggingface.co/Qwen/Qwen3-4B
+The deployed weights contain the synthetic-case fine-tune. The model license
+and training/export reports accompany the static model assets.
+The official MLC Qwen3-4B WebGPU library is fetched at runtime.
+https://huggingface.co/mlc-ai/Qwen3-4B-q4f16_1-MLC
+
+Pyodide 0.27.7 / CPython
+https://pyodide.org/
+The unmodified Python WebAssembly runtime is fetched from its public CDN.
+Pyodide and CPython retain their upstream licenses. No Python runtime binary
+is redistributed inside this site archive.
+
+esbuild 0.25.12 (MIT) is a build-time dependency; no esbuild runtime is
+deployed. Its package retains its upstream license in node_modules.
+
+Original Excel case, VBA and grading scripts: existing project authors.
+Those materials retain their existing ownership and distribution permissions.
+Including the user's code for this prototype assigns no new public license.

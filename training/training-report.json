@@ -1,0 +1,42 @@
+{
+  "base_model": "Qwen/Qwen3-4B",
+  "method": "Supervised QLoRA fine-tuning, merged into unquantized base weights",
+  "seed": 20261018,
+  "rank": 8,
+  "steps": 60,
+  "train_examples": 360,
+  "heldout_examples": 120,
+  "heldout_limitations": "Synthetic heldout wording variations from the same authored case families; not independent instructor or student feedback.",
+  "before": {
+    "eval_loss": 4.5089240074157715,
+    "eval_model_preparation_time": 0.003,
+    "eval_runtime": 76.9929,
+    "eval_samples_per_second": 1.559,
+    "eval_steps_per_second": 1.559
+  },
+  "after": {
+    "eval_loss": 1.3829890489578247,
+    "eval_model_preparation_time": 0.003,
+    "eval_runtime": 83.1628,
+    "eval_samples_per_second": 1.443,
+    "eval_steps_per_second": 1.443,
+    "epoch": 0.3333333333333333
+  },
+  "training": {
+    "train_runtime": 273.1072,
+    "train_samples_per_second": 0.439,
+    "train_steps_per_second": 0.22,
+    "train_loss": 1.9300605614980062,
+    "epoch": 0.3333333333333333
+  },
+  "elapsed_seconds": 444.86964082717896,
+  "gpu": "NVIDIA GeForce RTX 3060",
+  "data_sha256": {
+    "train": "94b4f6f4c51058d9944654721458b269053cd547024c84a0edd00f33c8d6e221",
+    "heldout": "1d7d0e81a47a758a2b3e57f0c328e42bd19c92b6ceb03bda5379f6566610b364"
+  },
+  "student_records_used": false,
+  "instructor_approval_of_targets": false,
+  "training_pool_examples": 360,
+  "processed_example_exposures": 120
+}

@@ -1,0 +1,7 @@
+node_modules/
+__pycache__/
+*.pyc
+.openai/
+test-results/
+tests/fixtures/
+training-cases.json
