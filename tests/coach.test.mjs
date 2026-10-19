@@ -3,12 +3,14 @@ import assert from 'node:assert/strict';
 import {execFileSync} from 'node:child_process';
 import {fileURLToPath} from 'node:url';
 import {feedbackEvidence} from '../dist/grader.js';
-import {tutorContext,tutorRequest,parseTutorFeedback,checkerAnchor} from '../dist/coach.js';
+import {tutorContext,tutorRequest,parseTutorFeedback,checkerAnchor,rubricGuidance} from '../dist/coach.js';
 const python="import importlib.util,json; from pathlib import Path; p=Path.cwd(); s=importlib.util.spec_from_file_location('grader',p/'dist/grader.py'); g=importlib.util.module_from_spec(s); s.loader.exec_module(g); g.configure(json.loads((p/'dist/grader-config.json').read_text())); print(json.dumps(g.grade_payload(json.loads((p/'dist/assets/practice-case.json').read_text()))))";
 const result=JSON.parse(execFileSync(process.env.PYTHON??'python',['-c',python],{cwd:fileURLToPath(new URL('../',import.meta.url)),encoding:'utf8'}));
 const evidence=feedbackEvidence(result,'B19','I used February returns / February units.');
 const output={checked_status:'incorrect',explanation:'Your February numerator concerns an earlier sales cohort. The requested February sales pair with March returns.',next_step:'Change the claim-month lookup to the month after the originating sales month.',question:'Which sales cohort generated returns booked in February?'};
 test('grounded facts disambiguate same-month returns and year-crossing warranties',()=>{
+ assert.match(rubricGuidance(evidence).join(' '),/March 2012.*February 2012/);
+ assert.match(rubricGuidance(feedbackEvidence(result,'B25')).join(' '),/February 2020.*December 2019/);
  const returns=tutorContext(evidence),warranty=tutorContext(feedbackEvidence(result,'B25'));
  assert.match(returns.verifiedFacts.join(' '),/March 2012/);assert.match(returns.verifiedFacts.join(' '),/DENOMINATOR.*February 2012/);assert.doesNotMatch(returns.verifiedFacts.join(' '),/January/);
  assert.match(warranty.verifiedFacts.join(' '),/February 2020/);assert.match(warranty.verifiedFacts.join(' '),/December 2019/);

@@ -17,13 +17,22 @@ designated Solution boxes, recalculate and save. Select the saved workbook in
 the site. The site does not execute VBA or recalculate Excel formulas. The
 practice sample contains four deliberate mistakes and scores 6/10.
 
-Students need no WebGPU or model-weight download. One Get feedback action
+Students need no WebGPU or model-weight download. One Get AI feedback action
 connects to the public service; the same button cancels pending feedback.
 Free ZeroGPU has queues and daily GPU quotas, so it does not guarantee classroom
 capacity or continuous availability. No paid fallback is configured. Grading
 and rubric hints remain usable if inference is unavailable. Clearing the session
 or refreshing discards local work; downloaded feedback remains on the student's
 device. Previously sent inference requests cannot be recalled from the host.
+
+The student page uses a single grading rule and exposes no policy selector.
+It accepts equivalent percentage/decimal answers. Legacy compatibility mode is
+retained in the Python source for reproducibility, rather than offered as a
+student choice. Selected-answer rubric guidance appears locally after grading
+and remains visible if remote AI fails or quota is exhausted. This makes the
+technical practice workflow usable without paid inference; it does not promise
+unrestricted generated feedback to a whole class. An institution could run
+the supplied service on its own compute, subject to its capacity and costs.
 
 ## Grading contract
 

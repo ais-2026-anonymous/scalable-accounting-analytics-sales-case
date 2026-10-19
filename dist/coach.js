@@ -66,3 +66,16 @@ export function checkerAnchor(evidence){
  const facts=tutorContext(evidence).verifiedFacts.filter(x=>x.startsWith('REQUIRED')).join(' ');
  return `${evidence.answerCell} · ${evidence.status==='correct'?'Saved output matches':evidence.status==='missing'?'Answer is blank':evidence.status==='unavailable'?'Recalculation needed':'Saved output needs review'} · ${evidence.criterion}${facts?' '+facts:''}`;
 }
+
+// Always available, deterministic guidance. This is visibly separate from AI prose.
+export function rubricGuidance(evidence){
+ const sale=periodName(evidence.salesPeriod),product=`Product ${evidence.product}`;
+ const guidance={
+  aggregation:`Total ${product} revenue for ${sale}, filtering on both year and month.`,
+  pricing:`Divide ${product} total revenue by total units for ${sale}; the result is dollars per unit.`,
+  clearance:`For ${product}, find the recurring lower monthly price using revenue divided by units. Enter the full month name.`,
+  returns:`Match ${product} returns booked in ${periodName(shift(evidence.salesPeriod,1))} to original units sold in ${sale}.`,
+  warranties:`Match ${product} warranties booked in ${periodName(shift(evidence.salesPeriod,2))} to original units sold in ${sale}.`
+ }[evidence.criterionId];
+ return [guidance,...evidence.possibleMistakes.slice(0,1).map(m=>m.hint)].filter(Boolean);
+}

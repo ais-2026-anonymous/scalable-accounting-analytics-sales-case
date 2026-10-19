@@ -5,9 +5,9 @@
  <meta name="description" content="Practice the sales, returns and warranty accounting case with Python Excel checking and optional AI feedback.">
  <title>Autograder</title>
  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Crect width='40' height='40' rx='10' fill='%23162c32'/%3E%3Cpath d='M10 11h8v8h-8zm12 0h8v8h-8zM10 23h8v8h-8z' fill='%23f4f2eb'/%3E%3Cpath d='m23 27 3 3 6-9' fill='none' stroke='%23c9dfb3' stroke-width='3'/%3E%3C/svg%3E">
- <link rel="stylesheet" href="styles.css?v=0.5.0">
+ <link rel="stylesheet" href="styles.css?v=0.5.1">
 
- <script type="module" src="app.js?v=0.5.0"></script>
+ <script type="module" src="app.js?v=0.5.1"></script>
 </head>
 <body>
  <a class="skip" href="#main">Skip to workspace</a>
@@ -33,8 +33,6 @@
        <div id="file-info" hidden></div>
        <div class="sample-row"><button class="text-button" id="sample-button">Try a sample ↗</button></div>
        <details class="upload-help"><summary>Preparing your case workbook</summary><p>Use the supplied two-product sales case. In desktop Excel, run Generate Data, complete the highlighted Solution cells, recalculate, and save. A Python grader runs locally in this browser and reads saved values; it does not run macros or recalculate arbitrary Excel formulas.</p><a href="assets/SalesSimulationSpring2026.xlsm" download>Download the original case workbook</a><p>The practice sample has deliberately mixed answers and is not a submission or a common answer key.</p></details>
-       <div class="policy-row"><label for="grading-policy">Grading policy</label><select id="grading-policy"><option value="concept">Concept checks · normalized values</option><option value="legacy">Original script · compatibility check</option></select></div>
-       <p class="policy-note" id="policy-note">Accepts equivalent percentages and decimals. Technical answers receive one practice point each.</p>
        <div id="upload-message" role="status" aria-live="polite"></div>
       </section>
       <section class="panel" id="results-panel"><div class="panel-heading"><div><span class="section-number">02</span><h2>Rubric review</h2></div><button class="text-button" data-go="rubric">View rubric ↗</button></div>
@@ -43,11 +41,11 @@
      </div>
      <div class="side-column">
       <section class="coach-card">
-       <h2>AI feedback</h2>
+       <h2>Feedback</h2>
        <label class="coach-label" for="focus-select">Answer</label><select id="focus-select" disabled><option>Upload a workbook first</option></select>
        <label class="coach-label" for="reflection">Your explanation <span>optional</span></label><textarea id="reflection" maxlength="1200" rows="3" placeholder="How did you calculate this answer?"></textarea>
        <p class="privacy-note">This explanation and its grading checks are sent to Hugging Face.</p>
-       <button class="button button-light" id="ask-coach" disabled>Get feedback</button>
+       <button class="button button-light" id="ask-coach" disabled>Get AI feedback</button>
        <p class="model-status" id="model-status" role="status"></p>
        <div id="coach-output" aria-live="polite"></div>
       </section>
