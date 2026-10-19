@@ -73,8 +73,9 @@ feedback, accounting expertise or student learning gains.
 `tools/train_model.py` and `tools/export_web_weights.py` reproduce training and
 export with a separately downloaded base model and CUDA environment. The data
 generation scripts additionally require the confidential local instructor
-fixture; the supplied training JSONL files do not. The adapter and merged MLC
-weights are published separately on Hugging Face with Apache-2.0 licensing.
+fixture; the supplied training JSONL files do not. The adapter and exact compressed MLC updates are published on Hugging Face
+with Apache-2.0 licensing. The worker reconstructs the tested trained tensors
+from the pinned public base, and verifies their SHA-256 before inference.
 `dist/model-host.json` pins the exact model repository commit.
 
 ## Deployment and verification
