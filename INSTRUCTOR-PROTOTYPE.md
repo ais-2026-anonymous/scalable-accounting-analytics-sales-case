@@ -95,10 +95,10 @@ Clearing site storage removes records; the JSON archive restores them. Earlier
 private archives remain supported; old distributed files are not retroactively
 stripped of their embedded maps and should be replaced with newly generated copies.
 
-The default path diagram contains routes, a START marker, endpoint numbers,
+The default path diagram contains routes, a filled-circle marker, endpoint numbers,
 symbols and color swatches. Its image has no instructional sentences; provide
 student directions separately to explain tracing the route and using the swatches. Extracting
-text alone does not specify the selected endpoint. Clear-text and plain-text
+text alone does not specify the selected endpoint. Number/color and plain-text
 accommodation options remain available. This is a visual reasoning exercise,
 not a validated human/AI discriminator. No adversarial text, hidden instructions
 or promise that a model will skip OCR is used.
@@ -160,5 +160,11 @@ is a layout variation, not a validated way to confuse or detect AI.
 
 Both Follow the line and Enter that endpoint’s number sentences have been
 removed from default path images. The image is compacted to the remaining
-diagram, preserving its aspect ratio in Excel. START and the diagram data remain.
+diagram, preserving its aspect ratio in Excel. A filled-circle marker and the diagram data remain.
 The optional worksheet text equivalent remains available only when selected.
+
+All image styles now omit instructional words, including Reference, Type,
+Leave the other boxes empty and START. The path starts at a filled circle; the
+number/color styles contain only a number and color swatch. Student directions
+are supplied separately. The explicit worksheet accommodation option remains
+off by default.

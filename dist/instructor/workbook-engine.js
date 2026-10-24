@@ -137,9 +137,8 @@ export function challengeImage(check){
  const c=document.createElement('canvas');c.width=1100;c.height=170;const x=c.getContext('2d');
  x.fillStyle='#F5F8FC';x.fillRect(0,0,c.width,c.height);x.strokeStyle='#CBD6DE';x.lineWidth=3;x.strokeRect(2,2,c.width-4,c.height-4);
  if(check.style==='light'){const r=seeded(check.answer);for(let i=0;i<16;i++){x.strokeStyle=i%2?'#DBE6E9':'#E1DFEA';x.lineWidth=1;x.beginPath();x.moveTo(r()*1100,r()*170);x.bezierCurveTo(r()*1100,r()*170,r()*1100,r()*170,r()*1100,r()*170);x.stroke();}}
- x.fillStyle='#233B44';x.font='bold 25px Arial';x.fillText('Reference',30,40);
- x.font='31px Arial';x.fillText(`Type ${check.answer} in the`,30,92);x.fillStyle='#'+COLORS[check.target].hex;x.fillRect(355,66,80,32);x.strokeRect(355,66,80,32);x.fillStyle='#233B44';x.fillText('cell below.',455,92);
- x.font='24px Arial';x.fillText('Leave the other two boxes empty.',30,137);
+ x.fillStyle='#233B44';x.font='bold 48px Arial';x.fillText(check.answer,60,108);
+ x.fillStyle='#'+COLORS[check.target].hex;x.fillRect(350,62,150,55);x.strokeStyle='#233B44';x.strokeRect(350,62,150,55);
  return c.toDataURL('image/png');
 }
 function pathImage(check){
@@ -151,7 +150,7 @@ function pathImage(check){
  // simply extracting a printed answer. No resistance to vision AI is claimed.
  for(let i=0;i<3;i++){x.strokeStyle='#425C68';x.lineWidth=2;x.beginPath();x.moveTo(126,ys[i]);x.lineTo(420,ys[middle[i]]);x.lineTo(760,ys[ends[i]]);x.stroke();}
  function symbol(which,px,py,size=12){x.beginPath();if(which===0)x.arc(px,py,size,0,Math.PI*2);if(which===1){x.moveTo(px,py-size);x.lineTo(px+size,py+size);x.lineTo(px-size,py+size);x.closePath();}if(which===2){x.moveTo(px,py-size);x.lineTo(px+size,py);x.lineTo(px,py+size);x.lineTo(px-size,py);x.closePath();}x.stroke();}
- x.font='bold 20px Arial';for(let i=0;i<3;i++){x.fillStyle='#F5F8FC';x.fillRect(16,ys[i]-15,110,30);x.fillStyle='#233B44';x.fillText(i===start?'START':'○',22,ys[i]+7);x.fillStyle='#F5F8FC';x.fillRect(763,ys[i]-17,320,34);x.fillStyle='#233B44';x.font='bold 24px Arial';x.fillText(numbers[i],782,ys[i]+8);x.strokeStyle='#233B44';symbol(i===ends[start]?check.target:symbols.filter(v=>v!==check.target)[i<ends[start]?i:i-1],920,ys[i]);}
+ for(let i=0;i<3;i++){x.fillStyle='#F5F8FC';x.fillRect(16,ys[i]-15,110,30);x.strokeStyle='#233B44';x.fillStyle=i===start?'#233B44':'#F5F8FC';x.beginPath();x.arc(110,ys[i],7,0,Math.PI*2);x.fill();x.stroke();x.fillStyle='#F5F8FC';x.fillRect(763,ys[i]-17,320,34);x.fillStyle='#233B44';x.font='bold 24px Arial';x.fillText(numbers[i],782,ys[i]+8);x.strokeStyle='#233B44';symbol(i===ends[start]?check.target:symbols.filter(v=>v!==check.target)[i<ends[start]?i:i-1],920,ys[i]);}
  for(let i=0;i<3;i++){x.strokeStyle='#233B44';symbol(i,220+i*275,147,8);x.fillStyle='#'+COLORS[i].hex;x.fillRect(240+i*275,137,90,20);x.strokeRect(240+i*275,137,90,20);}
  return c.toDataURL('image/png');
 }
