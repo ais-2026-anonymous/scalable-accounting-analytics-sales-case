@@ -9,13 +9,13 @@ graded in the grading site with the instructor’s recorded checksum. No receipt
 
 1. Open the instructor page. The original sales-case `.xlsm` is bundled with the
    website; no template upload is needed.
-2. Choose the course, assignment code and seed. Each batch contains five versions. Select question
+2. Choose the course, assignment code and seed. Each generation produces one workbook. Select question
    shuffling, product codes, question months, source-data scaling and one or two
-   image checks. Optionally assign one student ID per version.
+   image checks. Optionally assign a student ID.
 3. Optionally preview every version. The arrow buttons move a question and update its answer
    cell map. Choose a clear image or light background lines; a plain-text
    accommodation is available.
-4. Click **Generate five workbooks** directly, or after reviewing the preview,
+4. Click **Generate workbook** directly, or after reviewing the preview,
    and download the instructor package. Distribute only `workbooks/*.xlsm`.
    The grading map is saved privately in this browser's IndexedDB, keyed by checksum.
    Retain the checksum CSV and `INSTRUCTOR_ONLY/Receipt.json` as a private backup.

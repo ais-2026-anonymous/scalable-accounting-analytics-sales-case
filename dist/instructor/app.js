@@ -1,29 +1,29 @@
 import {SCHEMA,makePlan,createVariant,challengeImage,moveQuestion} from './workbook-engine.js?v=5';
 import {saveIssued} from './issued-store.js';
-const VERSION_COUNT=5;
+const VERSION_COUNT=1;
 const $=id=>document.getElementById(id),escape=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 let baseBytes,plans=[],versions=[],receipt;
 const say=(s,error=false)=>{$('status').textContent=s;$('status').classList.toggle('error',error);};
 function download(bytes,name,type='application/octet-stream'){const url=URL.createObjectURL(new Blob([bytes],{type})),a=document.createElement('a');a.href=url;a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(url),1500);}
 function csv(rows){return rows.map(r=>r.map(v=>{v=String(v??'');if(/^[=+@\-\t\r]/.test(v))v="'"+v;return '"'+v.replaceAll('"','""')+'"';}).join(',')).join('\r\n');}
-function options(){const studentIds=$('student-ids').value.split(/\r?\n/).map(s=>s.trim()).filter(Boolean),count=VERSION_COUNT;if(studentIds.length&&studentIds.length!==count)throw Error('Provide five student IDs, one per version, or leave the field blank.');if(new Set(studentIds).size!==studentIds.length)throw Error('Assigned student IDs must be unique.');return {course:$('course').value.trim(),assignment:$('assignment').value.trim(),count,seed:$('seed').value.trim(),shuffle:$('shuffle').checked,rename:$('rename').checked,periods:$('periods').checked,scale:$('scale').checked,imageCount:Number($('image-count').value),imageStyle:$('image-style').value,accessible:$('accessible').checked,studentIds};}
+function options(){const studentIds=$('student-ids').value.split(/\r?\n/).map(s=>s.trim()).filter(Boolean),count=VERSION_COUNT;if(studentIds.length&&studentIds.length!==count)throw Error('Enter one student ID, or leave the field blank.');if(new Set(studentIds).size!==studentIds.length)throw Error('Assigned student IDs must be unique.');return {course:$('course').value.trim(),assignment:$('assignment').value.trim(),count,seed:$('seed').value.trim(),shuffle:$('shuffle').checked,rename:$('rename').checked,periods:$('periods').checked,scale:$('scale').checked,imageCount:Number($('image-count').value),imageStyle:$('image-style').value,accessible:$('accessible').checked,studentIds};}
 function newSeed(){$('seed').value=crypto.randomUUID().slice(0,18);}
-function invalidate(){plans=[];$('generate-button').disabled=false;$('preview-version').disabled=true;$('preview').innerHTML='<div class="empty">Preview the new settings, or generate five versions directly.</div>';}
+function invalidate(){plans=[];$('generate-button').disabled=false;$('preview-version').disabled=true;$('preview').innerHTML='<div class="empty">Preview the new settings, or generate the workbook directly.</div>';}
 newSeed();$('new-seed').onclick=()=>{newSeed();invalidate();};$('options').addEventListener('input',invalidate);
 async function loadBase(){if(!baseBytes){const response=await fetch('../assets/SalesSimulationSpring2026.xlsm');if(!response.ok)throw Error('The supplied base workbook could not load.');baseBytes=await response.arrayBuffer();}return baseBytes;}
 async function preparePlans(){if(!$('options').reportValidity())return false;const o=options();await loadBase();plans=Array.from({length:o.count},(_,i)=>makePlan(o,i));$('preview-version').innerHTML=plans.map((p,i)=>`<option value="${i}">${escape(p.id)}</option>`).join('');$('preview-version').disabled=false;renderPreview();return true;}
-$('options').onsubmit=async e=>{e.preventDefault();try{if(await preparePlans())say('Review the questions and image, then generate the five workbooks.');}catch(e){say(e.message,true);}};
+$('options').onsubmit=async e=>{e.preventDefault();try{if(await preparePlans())say('Review the questions and image, then generate the workbook.');}catch(e){say(e.message,true);}};
 function renderPreview(){const p=plans[Number($('preview-version').value)];if(!p)return;$('preview').innerHTML=`<table class="question-table"><thead><tr><th>Answer cell</th><th>Question</th><th>Order</th></tr></thead><tbody>${p.questions.map((q,i)=>`<tr><td>${escape(q.cell)}</td><td>${escape(q.label)}</td><td class="order"><button data-move="${i}" data-direction="-1" aria-label="Move question ${i+1} up" ${i===0?'disabled':''}>↑</button><button data-move="${i}" data-direction="1" aria-label="Move question ${i+1} down" ${i===9?'disabled':''}>↓</button></td></tr>`).join('')}</tbody></table>${p.checks.map(c=>`<div class="image-preview"><img src="${challengeImage(c)}" alt="Figure preview"><div class="boxes">${c.boxes.map(b=>`<div class="color-box" style="background:#${b.hex}"><b>${escape(b.label)}</b>${escape(b.cell)}</div>`).join('')}</div></div>`).join('')}`;$('preview').querySelectorAll('[data-move]').forEach(b=>b.onclick=()=>{moveQuestion(p,Number(b.dataset.move),Number(b.dataset.direction));renderPreview();say('Question order updated for '+p.id+'. Generate again to issue this order.');});}
 $('preview-version').onchange=renderPreview;
 $('generate-button').onclick=async()=>{
  $('generate-button').disabled=true;$('preview-button').disabled=true;
- try{if(!plans.length&&!(await preparePlans()))return;const generated=[];for(let i=0;i<plans.length;i++){say(`Generating workbook ${i+1} of ${plans.length}…`);await new Promise(r=>setTimeout(r,0));generated.push(await createVariant(await loadBase(),plans[i]));}
+ try{if(!plans.length&&!(await preparePlans()))return;const generated=[];for(let i=0;i<plans.length;i++){say('Generating workbook…');await new Promise(r=>setTimeout(r,0));generated.push(await createVariant(await loadBase(),plans[i]));}
   await saveIssued(generated.map(v=>v.receipt));
   versions=generated;receipt={schema:SCHEMA,createdAt:new Date().toISOString(),versions:versions.map(v=>v.receipt)};
   $('downloads').hidden=false;$('version-list').innerHTML=versions.map((v,i)=>`<article class="version"><h3>${escape(v.receipt.id)}</h3><code>${v.receipt.checksum}</code><div class="actions"><button class="secondary" data-workbook="${i}">Download .xlsm</button><button class="secondary" data-copy="${i}">Copy checksum</button></div></article>`).join('');
   $('version-list').querySelectorAll('[data-workbook]').forEach(b=>b.onclick=()=>{const v=versions[Number(b.dataset.workbook)];download(v.bytes,v.filename,'application/vnd.ms-excel.sheet.macroEnabled.12');});
   $('version-list').querySelectorAll('[data-copy]').forEach(b=>b.onclick=async()=>{try{await navigator.clipboard.writeText(versions[Number(b.dataset.copy)].receipt.checksum);say('Checksum copied.');}catch{say('Select and copy the displayed checksum.');}});
-  say('Workbooks generated. Private grading records saved in this browser. Keep the checksums and instructor package.');
+  say('Workbook generated. Private grading record saved in this browser. Keep the checksum and instructor package.');
  }catch(e){say(e.message,true);}finally{$('generate-button').disabled=false;$('preview-button').disabled=false;}
 };
 $('restore-records').onchange=async e=>{
