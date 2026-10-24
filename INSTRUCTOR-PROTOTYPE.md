@@ -1,8 +1,9 @@
 # ACC3000 instructor workbook builder
 
-The separate static tool is served at `instructor/`. The existing student practice
+The macro generator is served at `instructor/` and the separate grading site at
+`grading/`, with independent HTML pages and JavaScript entry points. The existing student practice
 page and its legacy answer map are unchanged. New instructor variants must be
-graded in the instructor tool with their original receipt.
+graded in the grading site with their original receipt and recorded checksum.
 
 ## Use
 
@@ -20,8 +21,8 @@ graded in the instructor tool with their original receipt.
 5. Students open the workbook in desktop Excel, use its original **Generate Data**
    button once, complete the designated Solution cells and the image instructions
    below the questions, and save as `.xlsm`.
-6. In **Grade submissions**, load the original receipt and select one or more
-   saved student workbooks. Optionally paste the recorded checksum. Download the
+6. On the separate **grading site**, load the original receipt, enter the recorded
+   checksum (required), and select saved student workbooks from that same version. Download the
    results CSV if needed. No command-line Python operation is required.
 
 The browser loads Python/Pyodide from its pinned CDN on first grading use. ZIP,
@@ -74,8 +75,11 @@ The final digest excludes the mutable VBA container because Excel legitimately
 rewrites it when new worksheet modules are added. Native VBA is preserved and
 checked byte for byte at issue, not cryptographically authenticated after saving.
 
-The checksum is trusted only by comparing against the instructor's original
-receipt. There is no secret or answer key in the public website. Custom XML in
+Grading requires an instructor-entered checksum that appears in the original
+receipt. It must also match the selected workbook version and the checksum
+recomputed from that submission. Blank, incomplete and unrecorded checksums block
+grading. This confirms the issued content, not the identity of its creator.
+There is no secret or answer key in the public website. Custom XML in
 the workbook contains public assignment metadata, not the image-answer token or
 target box, except when the instructor intentionally requests a plain-text
 accommodation. Image answers exist as pixels and in the private receipt.

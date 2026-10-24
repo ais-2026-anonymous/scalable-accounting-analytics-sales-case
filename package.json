@@ -1,11 +1,11 @@
 {
   "name": "accounting-case-lab",
-  "version": "0.6.1",
+  "version": "0.6.2",
   "private": true,
   "type": "module",
   "packageManager": "pnpm@10.20.0",
   "scripts": {
-    "test": "node --test tests/coach.test.mjs",
+    "test": "node --test tests/coach.test.mjs tests/instructor.test.mjs tests/verification-policy.test.mjs",
     "build:feedback-client": "node tools/build-feedback-client.mjs"
   },
   "devDependencies": {
