@@ -3,7 +3,7 @@
 The macro generator is served at `instructor/` and the separate grading site at
 `grading/`, with independent HTML pages and JavaScript entry points. The existing student practice
 page and its legacy answer map are unchanged. New instructor variants must be
-graded in the grading site with their original receipt and recorded checksum.
+graded in the grading site with the instructor’s recorded checksum. No receipt upload is needed.
 
 ## Use
 
@@ -17,18 +17,17 @@ graded in the grading site with their original receipt and recorded checksum.
    accommodation is available.
 4. Click **Generate five workbooks** directly, or after reviewing the preview,
    and download the instructor package. Distribute only `workbooks/*.xlsm`.
-   Retain `INSTRUCTOR_ONLY/Receipt.json` and the checksum CSV privately.
+   Retain the checksum CSV privately. `Receipt.json` is an optional archival record, not an input to the grading page.
 5. Students open the workbook in desktop Excel, use its original **Generate Data**
    button once, complete the designated Solution cells and the image instructions
    below the questions, and save as `.xlsm`.
-6. On the separate **grading site**, load the original receipt, enter the recorded
-   checksum (required), and select saved student workbooks from that same version. Download the
+6. On the separate **grading site**, enter the recorded checksum (required)
+   and select saved student workbooks from that same version. Download the
    results CSV if needed. No command-line Python operation is required.
 
 The browser loads Python/Pyodide from its pinned CDN on first grading use. ZIP,
 image creation and integrity checks run locally. No AI service, API key, database,
-paid host or grading server is needed. Refreshing discards the in-memory receipt
-and results; retain the downloaded files.
+paid host or grading server is needed. Refreshing discards the in-memory results; retain the downloaded files.
 
 ## Data and macro preservation
 
@@ -75,14 +74,26 @@ The final digest excludes the mutable VBA container because Excel legitimately
 rewrites it when new worksheet modules are added. Native VBA is preserved and
 checked byte for byte at issue, not cryptographically authenticated after saving.
 
-Grading requires an instructor-entered checksum that appears in the original
-receipt. It must also match the selected workbook version and the checksum
-recomputed from that submission. Blank, incomplete and unrecorded checksums block
-grading. This confirms the issued content, not the identity of its creator.
+Grading requires an instructor-entered checksum. The grading definition is read
+from the workbook, then authenticated by recomputing its checksum against that
+independent instructor record before Python scoring. Blank, incomplete and
+mismatched checksums block grading. No server registry or JSON upload is needed.
+This confirms the issued content, not the identity of its creator.
 There is no secret or answer key in the public website. Custom XML in
 the workbook contains public assignment metadata, not the image-answer token or
 target box, except when the instructor intentionally requests a plain-text
-accommodation. Image answers exist as pixels and in the private receipt.
+accommodation. New workbooks also bind a SHA-256 commitment of the normalized three-box response
+into the public metadata. This allows image checking without a receipt. It is not
+encryption: a short response can be guessed by brute force. Older workbooks
+without this commitment receive technical scores and an explicit unavailable
+image-check result. Regenerate them for full receipt-free image checking.
+
+The default path diagram asks the student to follow a connected path from START
+to a numbered endpoint and match its symbol to one of three boxes. Extracting
+text alone does not specify the selected endpoint. Clear-text and plain-text
+accommodation options remain available. This is a visual reasoning exercise,
+not a validated human/AI discriminator. No adversarial text, hidden instructions
+or promise that a model will skip OCR is used.
 
 Technical correctness is reported out of ten; image completion is reported
 separately. An image passes only when the token is in the indicated box and the
@@ -110,3 +121,9 @@ every Excel version or alternative spreadsheet application.
 
 Browser ZIP support: JSZip 3.10.1, MIT license; retained in
 `dist/instructor/vendor/JSZIP-LICENSE.md`. https://github.com/Stuk/jszip
+
+On 2026-10-23, the checksum-only update passed 17 Node and 10 Python tests.
+All five newly generated path-diagram workbooks opened on the cover and ran the
+original macro in desktop Excel. A saved demonstration received 6/10 numerical
+points and 1/1 image checks without a receipt; moving its token to another box
+retained 6/10 technical points and returned 0/1 image checks.

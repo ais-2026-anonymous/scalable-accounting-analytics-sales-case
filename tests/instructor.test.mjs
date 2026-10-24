@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {makePlan,scaleRows,stable,sha,moveQuestion} from '../dist/instructor/workbook-engine.js';
+import {makePlan,scaleRows,stable,sha,moveQuestion,responseDigest} from '../dist/instructor/workbook-engine.js';
 const options={assignment:'TEST',course:'ACC3000',seed:'case-2026',shuffle:true,rename:true,periods:true,scale:true,imageCount:2};
 test('issued question maps cover all ten computations without duplicate answer cells',()=>{
  for(let i=0;i<12;i++){const p=makePlan(options,i);assert.equal(p.questions.length,10);assert.equal(new Set(p.questions.map(q=>q.id)).size,10);assert.equal(new Set(p.questions.map(q=>q.cell)).size,10);assert.ok(p.checks.every(c=>c.boxes.every(b=>Number(b.cell.slice(1))>35)));assert.ok(p.questions.every(q=>q.kind==='month'||/^201[2-9]-\d\d$/.test(q.period)));}
@@ -14,6 +14,13 @@ test('scaling preserves lagged unit rates, missing observations and clearance pr
 });
 test('canonical checksums ignore JSON key ordering but detect changed data',async()=>{
  assert.equal(await sha(stable({b:2,a:1})),await sha(stable({a:1,b:2})));assert.notEqual(await sha(stable({a:1})),await sha(stable({a:2})));
+});
+test('embedded image response commitment checks the token, its box and empty alternatives',async()=>{
+ const correct=await responseDigest(['','12345','']);
+ assert.equal(correct,await responseDigest([null,12345,'  ']));
+ assert.notEqual(correct,await responseDigest(['12345','','']));
+ assert.notEqual(correct,await responseDigest(['','12346','']));
+ assert.notEqual(correct,await responseDigest(['1','12345','']));
 });
 test('manual moves retain the computation identity while updating the displayed answer map',()=>{
  const p=makePlan(options,0),first=p.questions[0].id,second=p.questions[1].id;moveQuestion(p,0,1);assert.equal(p.questions[0].id,second);assert.equal(p.questions[1].id,first);assert.equal(p.questions[1].cell,'B11');assert.match(p.questions[1].label,/^02\. /);assert.equal(new Set(p.questions.map(q=>q.id)).size,10);

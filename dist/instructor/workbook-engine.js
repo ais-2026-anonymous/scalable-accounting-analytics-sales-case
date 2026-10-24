@@ -11,6 +11,9 @@ export const COLORS=[{name:'Blue',hex:'DCEBFF'},{name:'Gold',hex:'FFF0BD'},{name
 const enc=new TextEncoder();
 export const stable=v=>v===null||typeof v!=='object'?JSON.stringify(v):Array.isArray(v)?'['+v.map(stable).join(',')+']':'{'+Object.keys(v).sort().map(k=>JSON.stringify(k)+':'+stable(v[k])).join(',')+'}';
 export async function sha(data){return [...new Uint8Array(await crypto.subtle.digest('SHA-256',typeof data==='string'?enc.encode(data):data))].map(n=>n.toString(16).padStart(2,'0')).join('');}
+// A public commitment allows checksum-only validation without disclosing the
+// expected image response as plain text. It is not a secret or an AI barrier.
+export const responseDigest=values=>sha(stable(values.map(v=>String(v??'').trim())));
 export function seeded(seed){let s=2166136261;for(const c of seed)s=Math.imul(s^c.charCodeAt(0),16777619);return()=>{s+=0x6D2B79F5;let t=s;t=Math.imul(t^t>>>15,t|1);t^=t+Math.imul(t^t>>>7,t|61);return((t^t>>>14)>>>0)/4294967296;};}
 const integer=(r,a,b)=>a+Math.floor(r()*(b-a+1));
 const shuffle=(a,r)=>{a=[...a];for(let i=a.length-1;i>0;i--){const j=integer(r,0,i);[a[i],a[j]]=[a[j],a[i]];}return a;};
@@ -32,7 +35,7 @@ export function makePlan(options,index=0){
   const row=39+i*15,target=integer(r,0,2);
   // Challenge answers are independent of the public, reproducible variant seed.
   const entropy=new Uint32Array(1);crypto.getRandomValues(entropy);
-  return {id:'image-'+(i+1),row,boxes:COLORS.map((c,j)=>({name:c.name,cell:'B'+(row+7+j*2),labelCell:'A'+(row+7+j*2),label:`${c.name} box (${j+1})`,hex:c.hex})),target,answer:String(10000+entropy[0]%90000),style:options.imageStyle??'clear',accessible:!!options.accessible};
+  return {id:'image-'+(i+1),row,boxes:COLORS.map((c,j)=>({name:c.name,cell:'B'+(row+7+j*2),labelCell:'A'+(row+7+j*2),label:`${c.name} box (${j+1})`,hex:c.hex})),target,answer:String(10000+entropy[0]%90000),style:options.imageStyle??'path',accessible:!!options.accessible};
  });
  const factors=options.scale?{unitsA:integer(r,2,5),unitsB:integer(r,2,5),priceA:integer(r,1,3),priceB:integer(r,1,3)}:{unitsA:1,unitsB:1,priceA:1,priceB:1};
  return {schema:SCHEMA,id,course:options.course,seed:options.seed,labels,questions,checks,factors,issuedAt:new Date().toISOString(),assignedId:options.studentIds?.[index]??''};
@@ -48,7 +51,7 @@ async function text(z,p){const f=z.file(p);if(!f)throw Error('Required workbook 
 export async function openBook(bytes,name='workbook.xlsm'){
  if(!/\.xlsm$/i.test(name))throw Error('Use a genuine .xlsm macro workbook for this instructor prototype.');
  if(bytes.byteLength>20*1024*1024)throw Error('Workbook exceeds 20 MB.');
- const z=await globalThis.JSZip.loadAsync(bytes);
+ let z;try{z=await globalThis.JSZip.loadAsync(bytes);}catch{throw Error('The file is not a valid Excel workbook. Upload the original .xlsm file saved from Excel.');}
  const entries=Object.values(z.files);if(entries.length>4000||entries.reduce((s,f)=>s+(f._data?.uncompressedSize??0),0)>100*1024*1024)throw Error('Workbook exceeds extraction limits.');
  if(entries.some(f=>f.name.includes('externalLinks/')||f.unsafeOriginalName?.split('/').includes('..')))throw Error('External links or unsafe archive paths are not accepted.');
  const types=await text(z,'[Content_Types].xml');
@@ -122,6 +125,7 @@ function freshSheet(codeName='Sheet5'){
  return xml(`<worksheet xmlns="${M}" xmlns:r="${R}"><sheetPr codeName="${codeName}"/><dimension ref="A1:B80"/><sheetViews><sheetView showGridLines="0" zoomScale="100" workbookViewId="0"/></sheetViews><sheetFormatPr defaultRowHeight="21"/><cols><col min="1" max="1" width="88" customWidth="1"/><col min="2" max="2" width="24" customWidth="1"/></cols><sheetData/></worksheet>`);
 }
 export function challengeImage(check){
+ if(check.style==='path')return pathImage(check);
  const c=document.createElement('canvas');c.width=1100;c.height=170;const x=c.getContext('2d');
  x.fillStyle='#F5F8FC';x.fillRect(0,0,c.width,c.height);x.strokeStyle='#CBD6DE';x.lineWidth=3;x.strokeRect(2,2,c.width-4,c.height-4);
  if(check.style==='light'){const r=seeded(check.answer);for(let i=0;i<16;i++){x.strokeStyle=i%2?'#DBE6E9':'#E1DFEA';x.lineWidth=1;x.beginPath();x.moveTo(r()*1100,r()*170);x.bezierCurveTo(r()*1100,r()*170,r()*1100,r()*170,r()*1100,r()*170);x.stroke();}}
@@ -130,15 +134,30 @@ export function challengeImage(check){
  x.font='24px Arial';x.fillText('Leave the other two boxes empty.',30,137);
  return c.toDataURL('image/png');
 }
+function pathImage(check){
+ const c=document.createElement('canvas');c.width=1100;c.height=220;const x=c.getContext('2d'),r=seeded('path:'+check.answer);
+ x.fillStyle='#F5F8FC';x.fillRect(0,0,1100,220);x.fillStyle='#233B44';x.font='bold 22px Arial';x.fillText('Follow the line from START to an endpoint.',18,27);
+ x.font='19px Arial';x.fillText('Enter that endpoint’s number in the box matching its symbol. Leave the other boxes empty.',18,52);
+ const ys=[87,132,177],middle=shuffle([0,1,2],r),ends=shuffle([0,1,2],r),start=integer(r,0,2),symbols=shuffle([0,1,2],r);
+ const numbers=Array.from({length:3},(_,i)=>i===ends[start]?check.answer:String(10000+((Number(check.answer)+12347*(i+1))%90000)));
+ // Equal-weight paths and symbols require relational interpretation, beyond
+ // simply extracting a printed answer. No resistance to vision AI is claimed.
+ for(let i=0;i<3;i++){x.strokeStyle='#425C68';x.lineWidth=2;x.beginPath();x.moveTo(126,ys[i]);x.lineTo(420,ys[middle[i]]);x.lineTo(760,ys[ends[i]]);x.stroke();}
+ function symbol(which,px,py,size=12){x.beginPath();if(which===0)x.arc(px,py,size,0,Math.PI*2);if(which===1){x.moveTo(px,py-size);x.lineTo(px+size,py+size);x.lineTo(px-size,py+size);x.closePath();}if(which===2){x.moveTo(px,py-size);x.lineTo(px+size,py);x.lineTo(px,py+size);x.lineTo(px-size,py);x.closePath();}x.stroke();}
+ x.font='bold 20px Arial';for(let i=0;i<3;i++){x.fillStyle='#F5F8FC';x.fillRect(16,ys[i]-15,110,30);x.fillStyle='#233B44';x.fillText(i===start?'START':'○',22,ys[i]+7);x.fillStyle='#F5F8FC';x.fillRect(763,ys[i]-17,320,34);x.fillStyle='#233B44';x.font='bold 24px Arial';x.fillText(numbers[i],782,ys[i]+8);x.strokeStyle='#233B44';symbol(i===ends[start]?check.target:symbols.filter(v=>v!==check.target)[i<ends[start]?i:i-1],920,ys[i]);}
+ x.font='17px Arial';for(let i=0;i<3;i++){x.strokeStyle='#233B44';symbol(i,220+i*275,207,8);x.fillStyle='#233B44';x.fillText('= '+COLORS[i].name+' box',238+i*275,213);}
+ return c.toDataURL('image/png');
+}
 async function addPictures(b,solution,checks){
  const drawing=xml(`<xdr:wsDr xmlns:xdr="${X}" xmlns:a="${A}" xmlns:r="${R}"/>`);
  const dr=xml(`<Relationships xmlns="${P}"/>`),items=[];
  for(let i=0;i<checks.length;i++){
   const check=checks[i],url=challengeImage(check),bytes=Uint8Array.from(atob(url.split(',')[1]),c=>c.charCodeAt(0)),name=`acc3000_check_${i+1}.png`;
-  b.z.file('xl/media/'+name,bytes);items.push({...check,imageSha:await sha(bytes),imageFile:name});
+  b.z.file('xl/media/'+name,bytes);items.push({...check,imageSha:await sha(bytes),imageFile:name,responseDigest:await responseDigest(check.boxes.map((_,i)=>i===check.target?check.answer:''))});
   const anchor=drawing.createElementNS(X,'xdr:oneCellAnchor');
   for(const [prefix,ns]of [['xdr',X],['a',A],['r',R]])anchor.setAttributeNS('http://www.w3.org/2000/xmlns/','xmlns:'+prefix,ns);
-  anchor.innerHTML=`<xdr:from><xdr:col>0</xdr:col><xdr:colOff>0</xdr:colOff><xdr:row>${check.row-1}</xdr:row><xdr:rowOff>0</xdr:rowOff></xdr:from><xdr:ext cx="7334250" cy="1133475"/><xdr:pic><xdr:nvPicPr><xdr:cNvPr id="${i+1}" name="Visual instruction ${i+1}" descr="Read the instruction image and enter its value in the indicated box."/><xdr:cNvPicPr><a:picLocks noChangeAspect="1"/></xdr:cNvPicPr></xdr:nvPicPr><xdr:blipFill><a:blip r:embed="rId${i+1}"/><a:stretch><a:fillRect/></a:stretch></xdr:blipFill><xdr:spPr><a:xfrm><a:off x="0" y="0"/><a:ext cx="7334250" cy="1133475"/></a:xfrm><a:prstGeom prst="rect"><a:avLst/></a:prstGeom></xdr:spPr></xdr:pic><xdr:clientData/>`;
+  const height=check.style==='path'?1466850:1133475;
+  anchor.innerHTML=`<xdr:from><xdr:col>0</xdr:col><xdr:colOff>0</xdr:colOff><xdr:row>${check.row-1}</xdr:row><xdr:rowOff>0</xdr:rowOff></xdr:from><xdr:ext cx="7334250" cy="${height}"/><xdr:pic><xdr:nvPicPr><xdr:cNvPr id="${i+1}" name="Visual instruction ${i+1}" descr="Read the instruction image and enter its value in the indicated box."/><xdr:cNvPicPr><a:picLocks noChangeAspect="1"/></xdr:cNvPicPr></xdr:nvPicPr><xdr:blipFill><a:blip r:embed="rId${i+1}"/><a:stretch><a:fillRect/></a:stretch></xdr:blipFill><xdr:spPr><a:xfrm><a:off x="0" y="0"/><a:ext cx="7334250" cy="${height}"/></a:xfrm><a:prstGeom prst="rect"><a:avLst/></a:prstGeom></xdr:spPr></xdr:pic><xdr:clientData/>`;
   drawing.documentElement.appendChild(anchor);
   const rel=dr.createElementNS(P,'Relationship');rel.setAttribute('Id','rId'+(i+1));rel.setAttribute('Type',R+'/image');rel.setAttribute('Target','../media/'+name);dr.documentElement.appendChild(rel);
  }
@@ -180,6 +199,9 @@ export async function createVariant(baseBytes,plan){
  for(const q of plan.questions){const row=Number(q.cell.slice(1));put(solution,'A'+row,q.label,st.label);put(solution,q.cell,null,q.kind==='month'?st.input:q.kind==='return'||q.kind==='warranty'?st.rate:st.number);}
  for(const check of plan.checks){
   put(solution,'A'+(check.row-1),'Visual instruction '+check.id.slice(-1),st.heading);
+  // Fix image-area row heights, including accommodation text, so diagrams do
+  // not overlap the answer boxes when Excel uses its default row height.
+  for(let r=check.row;r<check.row+7;r++)put(solution,'A'+r,null,st.normal);
   for(const box of check.boxes){put(solution,box.labelCell,box.label,st.normal);put(solution,box.cell,null,addStyle(b,{unlock:true,fill:box.hex,bold:true}));}
   if(check.accessible)put(solution,'A'+(check.row+5),`Type ${check.answer} in the ${COLORS[check.target].name} box (${check.target+1}); leave the others empty.`,st.label);
  }
@@ -229,14 +251,16 @@ async function pictureChecks(b){
   checks.push({row:Number(first(from,'row',X).textContent)+1,col:Number(first(from,'col',X).textContent),imageSha:await sha(await b.z.file(target).async('uint8array'))});
  }return checks.sort((a,b)=>a.row-b.row);
 }
-export async function verifySubmission(bytes,name,receipt){
- if(receipt?.schema!==SCHEMA||!/^[a-f0-9]{64}$/.test(receipt.checksum??''))throw Error('Load the original instructor receipt first.');
+export async function verifySubmission(bytes,name,recorded){
+ const receipt=typeof recorded==='object'?recorded:null,expected=typeof recorded==='string'?recorded:receipt?.checksum;
+ if(!/^[a-f0-9]{64}$/.test(expected??''))throw Error('Enter the instructor’s recorded 64-character checksum first.');
  const b=await openBook(bytes,name),meta=await embeddedMeta(b);
- if(meta.id!==receipt.id)throw Error('Assignment version mismatch: this submission belongs to '+meta.id+'.');
+ if(meta.schema!==SCHEMA||meta.questions?.length!==10||!Array.isArray(meta.checks))throw Error('This workbook has an unsupported assignment definition.');
+ if(receipt&&meta.id!==receipt.id)throw Error('Assignment version mismatch: this submission belongs to '+meta.id+'.');
  if(b.sheets.has('Reference')||b.sheets.has('Title Page'))throw Error('Run Generate Data once in desktop Excel and save the resulting workbook before grading.');
  for(const n of ['Solution','Sales Locked','Warranties & Returns Locked'])if(!first(b.docs.get(n)??xml('<missing/>'),'sheetProtection'))throw Error('Required sheet protection is missing: '+n);
  const sol=cells(b.docs.get('Solution'),b.strings);
- if(sol.get('B5')?.value!==receipt.checksum)throw Error('The displayed assignment checksum does not match the instructor receipt.');
+ if(sol.get('B5')?.value!==expected)throw Error('The workbook checksum does not match the instructor’s recorded checksum.');
  if(meta.immutable.some(([a])=>sol.get(a)?.formula))throw Error('Assignment labels must remain fixed text.');
  for(const name of ['Sales Locked','Warranties & Returns Locked']){
   const source=cells(b.docs.get(name),b.strings);
@@ -260,10 +284,11 @@ export async function verifySubmission(bytes,name,receipt){
  const images=await pictureChecks(b);
  if(images.length!==meta.checks.length||images.some((v,i)=>v.row!==meta.checks[i].row||v.col!==0||v.imageSha!==meta.checks[i].imageSha))throw Error('Checksum mismatch: instruction images are missing, changed or relocated.');
  const checksum=await sha(stable({meta,sourceDigest,images:images.map(i=>i.imageSha)}));
- if(checksum!==receipt.checksum||sourceDigest!==receipt.sourceDigest)throw Error('Checksum mismatch: the assignment definition or protected source data differs from the issued version.');
- const visual=receipt.checks.map(check=>{
-  const actual=check.boxes.map(box=>sol.get(box.cell)?.value??null),passed=String(actual[check.target]??'').trim()===check.answer&&actual.every((v,i)=>i===check.target||v===null||String(v).trim()==='');
-  return {id:check.id,passed,expectedCell:check.boxes[check.target].cell,actual,message:passed?'Image instruction completed.':'The value must be in the indicated box and the other two boxes must be empty.'};
- });
- return {valid:true,checksum,meta,visual,identity:{last:sol.get('B1')?.value,first:sol.get('B2')?.value,id:sol.get('B3')?.value},questions:receipt.questions};
+ if(checksum!==expected||(receipt&&sourceDigest!==receipt.sourceDigest))throw Error('Checksum mismatch: the assignment definition or protected source data differs from the issued version.');
+ const visual=await Promise.all((receipt?.checks??meta.checks).map(async check=>{
+  const actual=check.boxes.map(box=>sol.get(box.cell)?.value??null);
+  const passed=check.responseDigest?await responseDigest(actual)===check.responseDigest:receipt?String(actual[check.target]??'').trim()===check.answer&&actual.every((v,i)=>i===check.target||v===null||String(v).trim()===''):null;
+  return {id:check.id,passed,expectedCell:check.boxes.map(b=>b.cell).join(' / '),actual,message:passed===null?'Older workbook: image grading needs a newly generated version. Technical grading is available.':passed?'Image instruction completed.':'The value must be in the indicated box and the other two boxes must be empty.'};
+ }));
+ return {valid:true,checksum,meta,visual,identity:{last:sol.get('B1')?.value,first:sol.get('B2')?.value,id:sol.get('B3')?.value},questions:meta.questions};
 }
