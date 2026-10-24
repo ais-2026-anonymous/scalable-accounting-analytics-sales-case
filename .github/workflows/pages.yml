@@ -23,9 +23,9 @@ jobs:
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - name: Check feedback contract
-        run: node --test tests/coach.test.mjs
+        run: node --test tests/coach.test.mjs tests/instructor.test.mjs
       - name: Check Python grading against public materials
-        run: python -m unittest discover -s tests -p 'test_public_practice.py'
+        run: python -m unittest discover -s tests -p 'test_*.py'
       - name: Require a pinned model publication
         run: python -c "import json,re; d=json.load(open('dist/model-host.json')); assert re.fullmatch('[a-f0-9]{40}', d['revision'] or ''), 'Publish the model and pin its commit before deploying'"
       - uses: actions/configure-pages@45bfe0192ca1faeb007ade9deae92b16b8254a0d # v6.0.0

@@ -1,0 +1,102 @@
+# ACC3000 instructor workbook builder
+
+The separate static tool is served at `instructor/`. The existing student practice
+page and its legacy answer map are unchanged. New instructor variants must be
+graded in the instructor tool with their original receipt.
+
+## Use
+
+1. Open the instructor page. Use the supplied original sales-case `.xlsm`, or
+   upload an ungenerated copy of that same workbook.
+2. Choose the course, assignment code, seed and 1–12 versions. Select question
+   shuffling, product codes, question months, source-data scaling and one or two
+   image checks. Optionally assign one student ID per version.
+3. Preview every version. The arrow buttons move a question and update its answer
+   cell map. Choose a clear image or light background lines; a plain-text
+   accommodation is available.
+4. Generate and download the instructor package. Distribute only `workbooks/*.xlsm`.
+   Retain `INSTRUCTOR_ONLY/Receipt.json` and the checksum CSV privately.
+5. Students open the workbook in desktop Excel, use its original **Generate Data**
+   button once, complete the designated Solution cells and the image instructions
+   below the questions, and save as `.xlsm`.
+6. In **Grade submissions**, load the original receipt and select one or more
+   saved student workbooks. Optionally paste the recorded checksum. Download the
+   results CSV if needed. No command-line Python operation is required.
+
+The browser loads Python/Pyodide from its pinned CDN on first grading use. ZIP,
+image creation and integrity checks run locally. No AI service, API key, database,
+paid host or grading server is needed. Refreshing discards the in-memory receipt
+and results; retain the downloaded files.
+
+## Data and macro preservation
+
+The original workbook is never modified. The browser starts from a ZIP copy,
+retains `xl/vbaProject.bin` and the native form-control parts byte for byte, and
+patches the worksheet XML. This path preserves native VBA and its Generate Data
+button, which the general spreadsheet export API does not export.
+
+The supplied workbook's cached simulation data are frozen before issue. Optional
+seeded integer factors scale each product's units and claims together, and scale
+its prices and revenue consistently. This preserves unit claim rates, claim lags
+and clearance price ratios; it is not a new independent stochastic simulation.
+Question months and identifiers vary separately. The original macro then
+performs its normal freeze/copy/protect workflow. It does not re-randomize these
+already fixed versions.
+
+The original source-generation formulas remain available in the unchanged base
+workbook. These variants deliberately issue a fixed dataset so an instructor can
+retain its trusted source fingerprint before students receive the file.
+
+## Integrity contract
+
+The SHA-256 assignment checksum binds:
+
+- Public assignment metadata, question text, answer-cell coordinates, product
+  identifiers and optional assigned student ID.
+- The canonical values of both protected original source tables.
+- The bytes, count and locations of the instruction images.
+
+The verifier also checks the displayed checksum, question labels, labeled box
+colors, required generated/protected sheets and the absence of merged answer
+boxes. The existing Python grader checks identity fields, the frozen locked
+timestamp and the issued ten numerical answers. Uncached formulas remain
+unavailable; misplaced answers are not searched for elsewhere.
+
+Answers and student-entered identity fields are excluded from the digest. Their
+ordinary edits and Excel's XML reserialization do not invalidate the assignment.
+The final digest excludes the mutable VBA container because Excel legitimately
+rewrites it when new worksheet modules are added. Native VBA is preserved and
+checked byte for byte at issue, not cryptographically authenticated after saving.
+
+The checksum is trusted only by comparing against the instructor's original
+receipt. There is no secret or answer key in the public website. Custom XML in
+the workbook contains public assignment metadata, not the image-answer token or
+target box, except when the instructor intentionally requests a plain-text
+accommodation. Image answers exist as pixels and in the private receipt.
+
+Technical correctness is reported out of ten; image completion is reported
+separately. An image passes only when the token is in the indicated box and the
+other two boxes are empty. A version mismatch is rejected for grading, not
+classified as misconduct. The prototype does not authenticate student identity,
+prevent redistribution of an issued workbook, detect all copied work, or prove
+that no AI assistance was used. Vision-capable AI may read these images. Claims
+about deterrence or learning require a separate evaluation; no new pilot or IRB
+coverage is claimed by this implementation.
+
+## Validation
+
+Node tests cover unique/reordered cell maps, reproducible variation, scaling and
+canonical checksums. Python tests exercise the original scoring logic through the
+instructor adapter, including blank/misplaced answers, missing source copies,
+assigned IDs and timestamps. Existing student-site tests remain in place.
+
+Desktop Excel validation on 2026-10-23 opened an issued version, ran the original
+Generate_Data macro, and saved a completed demonstration with both instruction
+images. The browser accepted that save with the original checksum, returned 6/10
+technical points and 1/2 image checks, returned 5/10 after a correct answer was
+moved outside its box, and rejected changed source data, labels, images and a
+different recorded checksum. This validates the tested Excel environment, not
+every Excel version or alternative spreadsheet application.
+
+Browser ZIP support: JSZip 3.10.1, MIT license; retained in
+`dist/instructor/vendor/JSZIP-LICENSE.md`. https://github.com/Stuk/jszip
