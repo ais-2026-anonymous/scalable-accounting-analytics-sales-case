@@ -17,16 +17,19 @@ graded in the grading site with the instructor’s recorded checksum. No receipt
    accommodation is available.
 4. Click **Generate five workbooks** directly, or after reviewing the preview,
    and download the instructor package. Distribute only `workbooks/*.xlsm`.
-   Retain the checksum CSV privately. `Receipt.json` is an optional archival record, not an input to the grading page.
+   The grading map is saved privately in this browser's IndexedDB, keyed by checksum.
+   Retain the checksum CSV and `INSTRUCTOR_ONLY/Receipt.json` as a private backup.
 5. Students open the workbook in desktop Excel, use its original **Generate Data**
    button once, complete the designated Solution cells and the image instructions
    below the questions, and save as `.xlsm`.
-6. On the separate **grading site**, enter the recorded checksum (required)
+6. In the same browser/profile, on the separate **grading site**, enter the recorded checksum (required)
    and select saved student workbooks from that same version. Download the
-   results CSV if needed. No command-line Python operation is required.
+   results CSV if needed. No command-line Python operation is required. On another
+   browser or after site storage is cleared, use **Restore private grading records**
+   on the generator page once before grading. The grading page has no JSON upload.
 
 The browser loads Python/Pyodide from its pinned CDN on first grading use. ZIP,
-image creation and integrity checks run locally. No AI service, API key, database,
+image creation and integrity checks run locally. No AI service, API key, hosted database,
 paid host or grading server is needed. Refreshing discards the in-memory results; retain the downloaded files.
 
 ## Data and macro preservation
@@ -57,7 +60,7 @@ retain its trusted source fingerprint before students receive the file.
 
 The SHA-256 assignment checksum binds:
 
-- Public assignment metadata, question text, answer-cell coordinates, product
+- The private assignment definition, question text, answer-cell coordinates, product
   identifiers and optional assigned student ID.
 - The canonical values of both protected original source tables.
 - The bytes, count and locations of the instruction images.
@@ -74,19 +77,23 @@ The final digest excludes the mutable VBA container because Excel legitimately
 rewrites it when new worksheet modules are added. Native VBA is preserved and
 checked byte for byte at issue, not cryptographically authenticated after saving.
 
-Grading requires an instructor-entered checksum. The grading definition is read
-from the workbook, then authenticated by recomputing its checksum against that
-independent instructor record before Python scoring. Blank, incomplete and
-mismatched checksums block grading. No server registry or JSON upload is needed.
-This confirms the issued content, not the identity of its creator.
-There is no secret or answer key in the public website. Custom XML in
-the workbook contains public assignment metadata, not the image-answer token or
-target box, except when the instructor intentionally requests a plain-text
-accommodation. New workbooks also bind a SHA-256 commitment of the normalized three-box response
-into the public metadata. This allows image checking without a receipt. It is not
-encryption: a short response can be guessed by brute force. Older workbooks
-without this commitment receive technical scores and an explicit unavailable
-image-check result. Regenerate them for full receipt-free image checking.
+Grading requires an instructor-entered checksum and its saved private record in
+the instructor browser. The definition is read from IndexedDB, never from the
+student workbook, and combined with recomputed source/image hashes and verified
+worksheet labels before Python scoring. Blank, incomplete, unknown and mismatched
+checksums block grading. This confirms issued content, not the identity of its creator.
+
+New student workbooks contain no grading-map Custom XML, issuer seed, answer-cell
+map, expected image response or response commitment. Only the human-facing
+questions, figures, entry cells and assignment checksum travel with the student
+file. The optional plaintext accommodation intentionally adds a text equivalent.
+The private record, including expected image responses, stays in IndexedDB and
+the instructor-only archive. No records are uploaded to a server or checked into
+the public repository. IndexedDB is local storage, not an authenticated instructor
+account: use a private browser profile and keep the archive out of student files.
+Clearing site storage removes records; the JSON archive restores them. Earlier
+private archives remain supported; old distributed files are not retroactively
+stripped of their embedded maps and should be replaced with newly generated copies.
 
 The default path diagram asks the student to follow a connected path from START
 to a numbered endpoint and match its symbol to one of three boxes. Extracting
@@ -127,3 +134,19 @@ All five newly generated path-diagram workbooks opened on the cover and ran the
 original macro in desktop Excel. A saved demonstration received 6/10 numerical
 points and 1/1 image checks without a receipt; moving its token to another box
 retained 6/10 technical points and returned 0/1 image checks.
+
+Student-facing cue review: generated copies omit the Visual instruction heading
+and cover reminder about the figure. Drawing object names/descriptions and
+media filenames use neutral Figure labels; color labels contain only the color
+name. The instructor preview no longer exposes the expected response in alt text.
+The optional worksheet text equivalent remains an explicit accommodation. The
+image itself still contains directions for students. The grading definition is now
+private to the instructor browser. Visible questions and figures still allow AI
+to infer tasks; no resistance to AI is claimed.
+
+The separate-map update passed 18 Node and 10 Python tests. Manual browser
+validation confirmed automatic record persistence across reloads, 6/10 technical
+scoring and 1/1 versus 0/1 image scoring. All five workbooks ran the native macro
+in Excel. ZIP inspection of all five issued files and a completed Excel save
+confirmed no grading-map XML, issuer seed, response commitment or redundant
+Visual instruction label was present.

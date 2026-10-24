@@ -11,9 +11,16 @@ export const COLORS=[{name:'Blue',hex:'DCEBFF'},{name:'Gold',hex:'FFF0BD'},{name
 const enc=new TextEncoder();
 export const stable=v=>v===null||typeof v!=='object'?JSON.stringify(v):Array.isArray(v)?'['+v.map(stable).join(',')+']':'{'+Object.keys(v).sort().map(k=>JSON.stringify(k)+':'+stable(v[k])).join(',')+'}';
 export async function sha(data){return [...new Uint8Array(await crypto.subtle.digest('SHA-256',typeof data==='string'?enc.encode(data):data))].map(n=>n.toString(16).padStart(2,'0')).join('');}
-// A public commitment allows checksum-only validation without disclosing the
-// expected image response as plain text. It is not a secret or an AI barrier.
+// Normalize image responses consistently. Commitments remain only in private
+// instructor records; new student workbooks contain no grading definition.
 export const responseDigest=values=>sha(stable(values.map(v=>String(v??'').trim())));
+// Grading definitions live in the instructor's browser/archive, never in new
+// student workbooks. Older private archives can reconstruct their definition.
+export function gradingDefinition(record){
+ if(record.definition)return record.definition;
+ const {schema,id,course,seed,labels,questions,factors,assignedId,checks,immutable}=record;
+ return {schema,id,course,seed,labels,questions,factors,assignedId,checks:checks.map(({answer,target,imageFile,...publicFields})=>publicFields),immutable};
+}
 export function seeded(seed){let s=2166136261;for(const c of seed)s=Math.imul(s^c.charCodeAt(0),16777619);return()=>{s+=0x6D2B79F5;let t=s;t=Math.imul(t^t>>>15,t|1);t^=t+Math.imul(t^t>>>7,t|61);return((t^t>>>14)>>>0)/4294967296;};}
 const integer=(r,a,b)=>a+Math.floor(r()*(b-a+1));
 const shuffle=(a,r)=>{a=[...a];for(let i=a.length-1;i>0;i--){const j=integer(r,0,i);[a[i],a[j]]=[a[j],a[i]];}return a;};
@@ -32,10 +39,10 @@ export function makePlan(options,index=0){
  questions=questions.map((q,i)=>({...q,cell:'B'+(8+i*3),label:`${String(i+1).padStart(2,'0')}. ${q.label}`}));
  const imageCount=Number(options.imageCount??1);
  const checks=Array.from({length:imageCount},(_,i)=>{
-  const row=39+i*15,target=integer(r,0,2);
+  const row=39+i*15;
   // Challenge answers are independent of the public, reproducible variant seed.
-  const entropy=new Uint32Array(1);crypto.getRandomValues(entropy);
-  return {id:'image-'+(i+1),row,boxes:COLORS.map((c,j)=>({name:c.name,cell:'B'+(row+7+j*2),labelCell:'A'+(row+7+j*2),label:`${c.name} box (${j+1})`,hex:c.hex})),target,answer:String(10000+entropy[0]%90000),style:options.imageStyle??'path',accessible:!!options.accessible};
+  const entropy=new Uint32Array(2);crypto.getRandomValues(entropy);const target=entropy[1]%3;
+  return {id:'image-'+(i+1),row,boxes:COLORS.map((c,j)=>({name:c.name,cell:'B'+(row+7+j*2),labelCell:'A'+(row+7+j*2),label:c.name,hex:c.hex})),target,answer:String(10000+entropy[0]%90000),style:options.imageStyle??'path',accessible:!!options.accessible};
  });
  const factors=options.scale?{unitsA:integer(r,2,5),unitsB:integer(r,2,5),priceA:integer(r,1,3),priceB:integer(r,1,3)}:{unitsA:1,unitsB:1,priceA:1,priceB:1};
  return {schema:SCHEMA,id,course:options.course,seed:options.seed,labels,questions,checks,factors,issuedAt:new Date().toISOString(),assignedId:options.studentIds?.[index]??''};
@@ -44,7 +51,6 @@ const xml=s=>{const d=new DOMParser().parseFromString(s,'application/xml');if(d.
 const str=d=>new XMLSerializer().serializeToString(d);
 const all=(n,tag,ns=M)=>[...n.getElementsByTagNameNS(ns,tag)];
 const first=(n,tag,ns=M)=>all(n,tag,ns)[0];
-const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&apos;'}[c]));
 function resolve(base,target){const p=target.startsWith('/')?target.slice(1):base.slice(0,base.lastIndexOf('/')+1)+target;const a=[];for(const x of p.split('/')){if(x==='..')a.pop();else if(x!=='.'&&x)a.push(x);}return a.join('/');}
 function relPath(p){return p.slice(0,p.lastIndexOf('/')+1)+'_rels/'+p.slice(p.lastIndexOf('/')+1)+'.rels';}
 async function text(z,p){const f=z.file(p);if(!f)throw Error('Required workbook part is missing: '+p);return f.async('string');}
@@ -129,7 +135,7 @@ export function challengeImage(check){
  const c=document.createElement('canvas');c.width=1100;c.height=170;const x=c.getContext('2d');
  x.fillStyle='#F5F8FC';x.fillRect(0,0,c.width,c.height);x.strokeStyle='#CBD6DE';x.lineWidth=3;x.strokeRect(2,2,c.width-4,c.height-4);
  if(check.style==='light'){const r=seeded(check.answer);for(let i=0;i<16;i++){x.strokeStyle=i%2?'#DBE6E9':'#E1DFEA';x.lineWidth=1;x.beginPath();x.moveTo(r()*1100,r()*170);x.bezierCurveTo(r()*1100,r()*170,r()*1100,r()*170,r()*1100,r()*170);x.stroke();}}
- x.fillStyle='#233B44';x.font='bold 25px Arial';x.fillText('WORKBOOK INSTRUCTION',30,40);
+ x.fillStyle='#233B44';x.font='bold 25px Arial';x.fillText('Reference',30,40);
  x.font='31px Arial';x.fillText(`Type ${check.answer} in the ${COLORS[check.target].name.toUpperCase()} box (${check.target+1}) below.`,30,92);
  x.font='24px Arial';x.fillText('Leave the other two boxes empty.',30,137);
  return c.toDataURL('image/png');
@@ -152,22 +158,22 @@ async function addPictures(b,solution,checks){
  const drawing=xml(`<xdr:wsDr xmlns:xdr="${X}" xmlns:a="${A}" xmlns:r="${R}"/>`);
  const dr=xml(`<Relationships xmlns="${P}"/>`),items=[];
  for(let i=0;i<checks.length;i++){
-  const check=checks[i],url=challengeImage(check),bytes=Uint8Array.from(atob(url.split(',')[1]),c=>c.charCodeAt(0)),name=`acc3000_check_${i+1}.png`;
+  const check=checks[i],url=challengeImage(check),bytes=Uint8Array.from(atob(url.split(',')[1]),c=>c.charCodeAt(0)),name=`figure_${i+1}.png`;
   b.z.file('xl/media/'+name,bytes);items.push({...check,imageSha:await sha(bytes),imageFile:name,responseDigest:await responseDigest(check.boxes.map((_,i)=>i===check.target?check.answer:''))});
   const anchor=drawing.createElementNS(X,'xdr:oneCellAnchor');
   for(const [prefix,ns]of [['xdr',X],['a',A],['r',R]])anchor.setAttributeNS('http://www.w3.org/2000/xmlns/','xmlns:'+prefix,ns);
   const height=check.style==='path'?1466850:1133475;
-  anchor.innerHTML=`<xdr:from><xdr:col>0</xdr:col><xdr:colOff>0</xdr:colOff><xdr:row>${check.row-1}</xdr:row><xdr:rowOff>0</xdr:rowOff></xdr:from><xdr:ext cx="7334250" cy="${height}"/><xdr:pic><xdr:nvPicPr><xdr:cNvPr id="${i+1}" name="Visual instruction ${i+1}" descr="Read the instruction image and enter its value in the indicated box."/><xdr:cNvPicPr><a:picLocks noChangeAspect="1"/></xdr:cNvPicPr></xdr:nvPicPr><xdr:blipFill><a:blip r:embed="rId${i+1}"/><a:stretch><a:fillRect/></a:stretch></xdr:blipFill><xdr:spPr><a:xfrm><a:off x="0" y="0"/><a:ext cx="7334250" cy="${height}"/></a:xfrm><a:prstGeom prst="rect"><a:avLst/></a:prstGeom></xdr:spPr></xdr:pic><xdr:clientData/>`;
+  anchor.innerHTML=`<xdr:from><xdr:col>0</xdr:col><xdr:colOff>0</xdr:colOff><xdr:row>${check.row-1}</xdr:row><xdr:rowOff>0</xdr:rowOff></xdr:from><xdr:ext cx="7334250" cy="${height}"/><xdr:pic><xdr:nvPicPr><xdr:cNvPr id="${i+1}" name="Figure ${i+1}" descr="Figure ${i+1}"/><xdr:cNvPicPr><a:picLocks noChangeAspect="1"/></xdr:cNvPicPr></xdr:nvPicPr><xdr:blipFill><a:blip r:embed="rId${i+1}"/><a:stretch><a:fillRect/></a:stretch></xdr:blipFill><xdr:spPr><a:xfrm><a:off x="0" y="0"/><a:ext cx="7334250" cy="${height}"/></a:xfrm><a:prstGeom prst="rect"><a:avLst/></a:prstGeom></xdr:spPr></xdr:pic><xdr:clientData/>`;
   drawing.documentElement.appendChild(anchor);
   const rel=dr.createElementNS(P,'Relationship');rel.setAttribute('Id','rId'+(i+1));rel.setAttribute('Type',R+'/image');rel.setAttribute('Target','../media/'+name);dr.documentElement.appendChild(rel);
  }
- b.z.file('xl/drawings/acc3000Checks.xml',str(drawing));b.z.file('xl/drawings/_rels/acc3000Checks.xml.rels',str(dr));
- const rels=xml(`<Relationships xmlns="${P}"><Relationship Id="rIdChecks" Type="${R}/drawing" Target="../drawings/acc3000Checks.xml"/></Relationships>`);
+ b.z.file('xl/drawings/acc3000Figures.xml',str(drawing));b.z.file('xl/drawings/_rels/acc3000Figures.xml.rels',str(dr));
+ const rels=xml(`<Relationships xmlns="${P}"><Relationship Id="rIdFigures" Type="${R}/drawing" Target="../drawings/acc3000Figures.xml"/></Relationships>`);
  b.z.file(relPath(b.sheets.get('Solution').path),str(rels));
- const d=solution.createElementNS(M,'drawing');d.setAttributeNS(R,'r:id','rIdChecks');solution.documentElement.appendChild(d);
+ const d=solution.createElementNS(M,'drawing');d.setAttributeNS(R,'r:id','rIdFigures');solution.documentElement.appendChild(d);
  const ct=xml(await text(b.z,'[Content_Types].xml')),ns=ct.documentElement.namespaceURI;
  if(![...ct.documentElement.children].some(n=>n.getAttribute('Extension')==='png')){const e=ct.createElementNS(ns,'Default');e.setAttribute('Extension','png');e.setAttribute('ContentType','image/png');ct.documentElement.appendChild(e);}
- const override=ct.createElementNS(ns,'Override');override.setAttribute('PartName','/xl/drawings/acc3000Checks.xml');override.setAttribute('ContentType','application/vnd.openxmlformats-officedocument.drawing+xml');ct.documentElement.appendChild(override);b.z.file('[Content_Types].xml',str(ct));
+ const override=ct.createElementNS(ns,'Override');override.setAttribute('PartName','/xl/drawings/acc3000Figures.xml');override.setAttribute('ContentType','application/vnd.openxmlformats-officedocument.drawing+xml');ct.documentElement.appendChild(override);b.z.file('[Content_Types].xml',str(ct));
  return items;
 }
 export async function createVariant(baseBytes,plan){
@@ -198,7 +204,7 @@ export async function createVariant(baseBytes,plan){
  put(solution,'A6',plan.course+' — '+plan.id,st.heading);put(solution,'B6','Version '+plan.id,st.heading);
  for(const q of plan.questions){const row=Number(q.cell.slice(1));put(solution,'A'+row,q.label,st.label);put(solution,q.cell,null,q.kind==='month'?st.input:q.kind==='return'||q.kind==='warranty'?st.rate:st.number);}
  for(const check of plan.checks){
-  put(solution,'A'+(check.row-1),'Visual instruction '+check.id.slice(-1),st.heading);
+  put(solution,'A'+(check.row-1),null,st.normal);
   // Fix image-area row heights, including accommodation text, so diagrams do
   // not overlap the answer boxes when Excel uses its default row height.
   for(let r=check.row;r<check.row+7;r++)put(solution,'A'+r,null,st.normal);
@@ -213,10 +219,9 @@ export async function createVariant(baseBytes,plan){
  const sourceDigest=await sha(stable(data));
  const checksum=await sha(stable({meta,sourceDigest,images:checks.map(c=>c.imageSha)}));
  put(solution,'B5',checksum);all(solution,'row').find(r=>r.getAttribute('r')==='5').setAttribute('ht','48');
- const receipt={...meta,checksum,sourceDigest,issuedAt:plan.issuedAt,baseVbaSha:baseVba,checks};
- // Custom XML is retained by Excel and does not become visible through UnhideAllSheets.
- b.z.file('customXml/acc3000.xml',`<?xml version="1.0"?><assignment xmlns="urn:acc3000:assignment" checksum="${checksum}">${esc(stable(meta))}</assignment>`);
- const rel=b.rels.createElementNS(P,'Relationship');rel.setAttribute('Id','rIdAcc3000');rel.setAttribute('Type',R+'/customXml');rel.setAttribute('Target','../customXml/acc3000.xml');b.rels.documentElement.appendChild(rel);
+ const receipt={...meta,definition:meta,checksum,sourceDigest,issuedAt:plan.issuedAt,baseVbaSha:baseVba,checks};
+ // Only the instructor's private record receives the seed, answer map and
+ // image response commitment. The student copy contains no grading capsule.
  const calc=all(b.rels,'Relationship',P).find(r=>r.getAttribute('Type').endsWith('/calcChain'));calc?.remove();b.z.remove('xl/calcChain.xml');
  const ct=xml(await text(b.z,'[Content_Types].xml'));for(const n of [...ct.documentElement.children])if(n.getAttribute('PartName')==='/xl/calcChain.xml')n.remove();b.z.file('[Content_Types].xml',str(ct));
  const calcPr=first(b.book,'calcPr');calcPr?.setAttribute('fullCalcOnLoad','1');
@@ -224,18 +229,9 @@ export async function createVariant(baseBytes,plan){
  for(const n of [...b.book.getElementsByTagName('*')])if(n.localName==='absPath')n.parentNode.parentNode.remove();
  b.z.file('xl/_rels/workbook.xml.rels',str(b.rels));b.z.file('xl/workbook.xml',str(b.book));b.z.file('xl/styles.xml',str(b.styles));
  b.docs.set('Solution',solution);for(const [name,d]of b.docs)b.z.file(b.sheets.get(name).path,str(d));
- const title=b.docs.get('Title Page');put(title,'A1',plan.course+' — '+plan.id,st.heading);put(title,'A3','Click Generate Data once in desktop Excel. Complete the Solution sheet, including the image instruction after the questions, then save.',st.label);b.z.file(b.sheets.get('Title Page').path,str(title));
+ const title=b.docs.get('Title Page');put(title,'A1',plan.course+' — '+plan.id,st.heading);put(title,'A3','Click Generate Data once in desktop Excel. Complete the Solution sheet, then save.',st.label);b.z.file(b.sheets.get('Title Page').path,str(title));
  const bytes=await b.z.generateAsync({type:'uint8array',compression:'DEFLATE'});
  return {bytes,receipt,filename:plan.id+'.xlsm',images:checks.map(challengeImage)};
-}
-async function embeddedMeta(b){
- const rel=all(b.rels,'Relationship',P).find(r=>r.getAttribute('Type')===R+'/customXml'&&r.getAttribute('Target').includes('acc3000'));
- let path=rel?resolve('xl/workbook.xml',rel.getAttribute('Target')):null;
- // Excel can rename the custom XML part when saving; locate it by its namespace.
- if(!path||!b.z.file(path))path=null;
- const candidates=path?[path]:Object.keys(b.z.files).filter(p=>/^customXml\/[^/]+\.xml$/.test(p));
- for(const p of candidates){const d=xml(await text(b.z,p));if(d.documentElement.namespaceURI==='urn:acc3000:assignment')return JSON.parse(d.documentElement.textContent);}
- throw Error('This workbook has no ACC3000 assignment definition. It may be a legacy or different assignment.');
 }
 async function pictureChecks(b){
  const solution=b.docs.get('Solution'),ref=first(solution,'drawing');if(!ref)throw Error('The image instruction drawing is missing.');
@@ -252,9 +248,9 @@ async function pictureChecks(b){
  }return checks.sort((a,b)=>a.row-b.row);
 }
 export async function verifySubmission(bytes,name,recorded){
- const receipt=typeof recorded==='object'?recorded:null,expected=typeof recorded==='string'?recorded:receipt?.checksum;
- if(!/^[a-f0-9]{64}$/.test(expected??''))throw Error('Enter the instructor’s recorded 64-character checksum first.');
- const b=await openBook(bytes,name),meta=await embeddedMeta(b);
+ const receipt=recorded,expected=receipt?.checksum;
+ if(receipt?.schema!==SCHEMA||!/^[a-f0-9]{64}$/.test(expected??''))throw Error('The instructor’s private grading record is required.');
+ const b=await openBook(bytes,name),meta=gradingDefinition(receipt);
  if(meta.schema!==SCHEMA||meta.questions?.length!==10||!Array.isArray(meta.checks))throw Error('This workbook has an unsupported assignment definition.');
  if(receipt&&meta.id!==receipt.id)throw Error('Assignment version mismatch: this submission belongs to '+meta.id+'.');
  if(b.sheets.has('Reference')||b.sheets.has('Title Page'))throw Error('Run Generate Data once in desktop Excel and save the resulting workbook before grading.');

@@ -1,5 +1,6 @@
-import {verifySubmission} from '../instructor/workbook-engine.js?v=3';
+import {verifySubmission} from '../instructor/workbook-engine.js?v=5';
 import {requireRecordedChecksum} from './verification-policy.js?v=2';
+import {getIssued} from '../instructor/issued-store.js';
 const $=id=>document.getElementById(id),escape=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 let results=[],worker,job=0;const pending=new Map();
 const say=(s,error=false)=>{$('status').textContent=s;$('status').classList.toggle('error',error);};
@@ -15,18 +16,21 @@ $('grade-button').onclick=async()=>{
  const files=[...$('submission-files').files];if(!files.length){say('Select one or more student workbooks.',true);return;}
  $('grade-button').disabled=true;
  try{
+  const issued=await getIssued(expected);
+  if(!issued){say('No private grading record for this checksum is saved in this browser. Use the browser that generated the workbooks, or restore the private archive on the generator page.',true);return;}
   for(let i=0;i<files.length;i++){
    const f=files[i];say(`Checking ${i+1} of ${files.length}: ${f.name}`);
    try{
-    const bytes=await f.arrayBuffer(),integrity=await verifySubmission(bytes,f.name,expected);
+    const bytes=await f.arrayBuffer(),integrity=await verifySubmission(bytes,f.name,issued);
     say('Integrity matched. Loading the Python numerical grader…');
-    const technical=await python({bytes,name:f.name,receipt:{...integrity.meta,checksum:integrity.checksum}});
+    const technical=await python({bytes,name:f.name,receipt:issued});
     if(!technical.valid)throw Error(technical.reason);
     results.push({file:f.name,version:integrity.meta.id,integrity,technical,valid:true});
    }catch(e){results.push({file:f.name,valid:false,reason:e.message});}
    renderResults();
   }
   say('Checking complete.');$('export-results').disabled=!results.length;
+ }catch(e){say(e.message,true);
  }finally{$('grade-button').disabled=false;}
 };
 const imageUnavailable=r=>r.integrity.visual.some(v=>v.passed===null);
