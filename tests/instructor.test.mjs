@@ -14,9 +14,9 @@ test('three horizontal entry cells share one row and cannot overlap subsequent f
   assert.equal(new Set(all).size,all.length);
   for(let j=0;j<p.checks.length;j++){
    const rows=p.checks[j].boxes.map(b=>Number(b.cell.slice(1)));
-   assert.ok(rows[0]>=p.checks[j].row+7);
+   assert.equal(rows[0],p.checks[j].row+3);
    assert.equal(new Set(rows).size,1);
-   assert.deepEqual(p.checks[j].boxes.map(b=>b.cell.match(/^[A-Z]+/)[0]),['B','D','F']);
+   assert.deepEqual(p.checks[j].boxes.map(b=>b.cell.match(/^[A-Z]+/)[0]),['A','B','C']);
    if(j+1<p.checks.length)assert.ok(rows[2]<p.checks[j+1].row);
    assert.ok(rows[2]<=100);
   }
@@ -46,5 +46,5 @@ test('private grading records restore old definitions and use the separately sav
  assert.equal(gradingDefinition({...record,definition}),definition);
 });
 test('manual moves retain the computation identity while updating the displayed answer map',()=>{
- const p=makePlan(options,0),first=p.questions[0].id,second=p.questions[1].id;moveQuestion(p,0,1);assert.equal(p.questions[0].id,second);assert.equal(p.questions[1].id,first);assert.equal(p.questions[1].cell,'B11');assert.match(p.questions[1].label,/^02\. /);assert.equal(new Set(p.questions.map(q=>q.id)).size,10);
+ const p=makePlan(options,0),first=p.questions[0].id,second=p.questions[1].id;moveQuestion(p,0,1);assert.equal(p.questions[0].id,second);assert.equal(p.questions[1].id,first);assert.equal(p.questions[1].cell,'C11');assert.match(p.questions[1].label,/^02\. /);assert.equal(new Set(p.questions.map(q=>q.id)).size,10);
 });

@@ -154,7 +154,7 @@ Visual instruction label was present.
 The single-workbook generator omits Blue/Gold/Violet labels in both the
 worksheet and default diagram legend. Color swatches replace words in the
 legend. The three entry cells share the first entry row below the picture, in
-columns B, D and F, with blank spacer columns C and E. A second figure starts
+columns A, B and C, aligned to the picture width. A second figure starts
 after that entry row to avoid overlap. The private grading record retains the exact locations. This spacing
 is a layout variation, not a validated way to confuse or detect AI.
 
@@ -170,6 +170,21 @@ are supplied separately. The explicit worksheet accommodation option remains
 off by default.
 
 Current horizontal layout: each figure uses one entry row for all three colors.
-The entry columns B, D and F have equal widths, separated by narrow blank
-columns C and E. Technical answer cells and identity fields are unchanged.
+The entry columns A, B and C have equal widths. Technical answer cells are
+recorded in the private map; identity and timestamp anchors remain in B.
 Exact coordinates are retained in the private grading record.
+
+Aligned layout: three equal-width columns A:C carry the picture and the three
+entry cells. Two-cell drawing anchors bind the image edges to the same grid and
+the top of the entry row. Question prompts span merged A:B cells and numerical
+answers use C; the private map supplies those coordinates to the Python grader.
+Identity anchors remain B1:B3, and the original timestamp B4 stays unmerged.
+Blue entry-cell values in A are excluded from immutable-label hashing. The
+image remains without instructional text.
+
+Desktop Excel validation of the aligned grid confirmed equal picture/grid left
+edges and widths, with the picture bottom exactly at the entry-row top for both
+figures. The original macro and unmerged B4 timestamp worked. Browser grading
+accepted the Excel save at 6/10 technical and 2/2 picture checks, returned 1/2
+for a wrong-cell response, and accepted a populated A entry cell without a
+spurious checksum mismatch. No instructional image text was added.

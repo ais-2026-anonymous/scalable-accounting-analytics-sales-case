@@ -36,15 +36,15 @@ export function makePlan(options,index=0){
   questions.push({id:group+'-'+product,kind,group,product,period,points:1,title:verb+' — '+labels[product],label:verb+' — '+labels[product]+suffix+'.'});
  }
  if(options.shuffle)questions=shuffle(questions,r);
- questions=questions.map((q,i)=>({...q,cell:'B'+(8+i*3),label:`${String(i+1).padStart(2,'0')}. ${q.label}`}));
+ questions=questions.map((q,i)=>({...q,cell:'C'+(8+i*3),label:`${String(i+1).padStart(2,'0')}. ${q.label}`}));
  const imageCount=Number(options.imageCount??1);
  let nextFigureRow=39;
  const checks=Array.from({length:imageCount},(_,i)=>{
-  const row=nextFigureRow,entryRow=row+7+integer(r,0,2);
-  nextFigureRow=entryRow+4;
+  const row=nextFigureRow,entryRow=row+(options.accessible?5:3);
+  nextFigureRow=entryRow+3;
   // Challenge answers are independent of the public, reproducible variant seed.
   const entropy=new Uint32Array(2);crypto.getRandomValues(entropy);const target=entropy[1]%3;
-  return {id:'image-'+(i+1),row,boxes:COLORS.map((c,j)=>({name:c.name,cell:['B','D','F'][j]+entryRow,labelCell:['A','C','E'][j]+entryRow,label:'',hex:c.hex})),target,answer:String(10000+entropy[0]%90000),style:options.imageStyle??'path',accessible:!!options.accessible};
+  return {id:'image-'+(i+1),row,boxes:COLORS.map((c,j)=>({name:c.name,cell:['A','B','C'][j]+entryRow,label:'',hex:c.hex})),target,answer:String(10000+entropy[0]%90000),style:options.imageStyle??'path',accessible:!!options.accessible};
  });
  const factors=options.scale?{unitsA:integer(r,2,5),unitsB:integer(r,2,5),priceA:integer(r,1,3),priceB:integer(r,1,3)}:{unitsA:1,unitsB:1,priceA:1,priceB:1};
  return {schema:SCHEMA,id,course:options.course,seed:options.seed,labels,questions,checks,factors,issuedAt:new Date().toISOString(),assignedId:options.studentIds?.[index]??''};
@@ -105,7 +105,7 @@ export function scaleRows(sales,claims,f){
 export function moveQuestion(plan,index,direction){
  const target=index+direction;if(target<0||target>=plan.questions.length)return;
  [plan.questions[index],plan.questions[target]]=[plan.questions[target],plan.questions[index]];
- plan.questions=plan.questions.map((q,i)=>({...q,cell:'B'+(8+i*3),label:String(i+1).padStart(2,'0')+'. '+q.label.replace(/^\d+\.\s*/, '')}));
+ plan.questions=plan.questions.map((q,i)=>({...q,cell:'C'+(8+i*3),label:String(i+1).padStart(2,'0')+'. '+q.label.replace(/^\d+\.\s*/, '')}));
 }
 const indexes=new WeakMap();
 function put(doc,address,value,style){
@@ -130,11 +130,11 @@ function addStyle(b,{numFmt=0,fill=null,bold=false,unlock=false,wrap=false,size=
  xf.innerHTML=`<alignment vertical="center"${wrap?' wrapText="1"':''}/><protection locked="${unlock?0:1}"/>`;xfs.appendChild(xf);xfs.setAttribute('count',xfs.children.length);return id;
 }
 function freshSheet(codeName='Sheet5'){
- return xml(`<worksheet xmlns="${M}" xmlns:r="${R}"><sheetPr codeName="${codeName}"/><dimension ref="A1:F100"/><sheetViews><sheetView showGridLines="0" zoomScale="100" workbookViewId="0"/></sheetViews><sheetFormatPr defaultRowHeight="21"/><cols><col min="1" max="1" width="88" customWidth="1"/><col min="2" max="2" width="24" customWidth="1"/><col min="3" max="3" width="4" customWidth="1"/><col min="4" max="4" width="24" customWidth="1"/><col min="5" max="5" width="4" customWidth="1"/><col min="6" max="6" width="24" customWidth="1"/></cols><sheetData/></worksheet>`);
+ return xml(`<worksheet xmlns="${M}" xmlns:r="${R}"><sheetPr codeName="${codeName}"/><dimension ref="A1:C100"/><sheetViews><sheetView showGridLines="0" zoomScale="100" workbookViewId="0"/></sheetViews><sheetFormatPr defaultRowHeight="21"/><cols><col min="1" max="3" width="26" customWidth="1"/></cols><sheetData/></worksheet>`);
 }
 export function challengeImage(check){
  if(check.style==='path')return pathImage(check);
- const c=document.createElement('canvas');c.width=1100;c.height=170;const x=c.getContext('2d');
+ const c=document.createElement('canvas');c.width=1100;c.height=160;const x=c.getContext('2d');
  x.fillStyle='#F5F8FC';x.fillRect(0,0,c.width,c.height);x.strokeStyle='#CBD6DE';x.lineWidth=3;x.strokeRect(2,2,c.width-4,c.height-4);
  if(check.style==='light'){const r=seeded(check.answer);for(let i=0;i<16;i++){x.strokeStyle=i%2?'#DBE6E9':'#E1DFEA';x.lineWidth=1;x.beginPath();x.moveTo(r()*1100,r()*170);x.bezierCurveTo(r()*1100,r()*170,r()*1100,r()*170,r()*1100,r()*170);x.stroke();}}
  x.fillStyle='#233B44';x.font='bold 48px Arial';x.fillText(check.answer,60,108);
@@ -160,10 +160,9 @@ async function addPictures(b,solution,checks){
  for(let i=0;i<checks.length;i++){
   const check=checks[i],url=challengeImage(check),bytes=Uint8Array.from(atob(url.split(',')[1]),c=>c.charCodeAt(0)),name=`figure_${i+1}.png`;
   b.z.file('xl/media/'+name,bytes);items.push({...check,imageSha:await sha(bytes),imageFile:name,responseDigest:await responseDigest(check.boxes.map((_,i)=>i===check.target?check.answer:''))});
-  const anchor=drawing.createElementNS(X,'xdr:oneCellAnchor');
+  const anchor=drawing.createElementNS(X,'xdr:twoCellAnchor');anchor.setAttribute('editAs','oneCell');
   for(const [prefix,ns]of [['xdr',X],['a',A],['r',R]])anchor.setAttributeNS('http://www.w3.org/2000/xmlns/','xmlns:'+prefix,ns);
-  const height=check.style==='path'?1066800:1133475;
-  anchor.innerHTML=`<xdr:from><xdr:col>0</xdr:col><xdr:colOff>0</xdr:colOff><xdr:row>${check.row-1}</xdr:row><xdr:rowOff>0</xdr:rowOff></xdr:from><xdr:ext cx="7334250" cy="${height}"/><xdr:pic><xdr:nvPicPr><xdr:cNvPr id="${i+1}" name="Figure ${i+1}" descr="Figure ${i+1}"/><xdr:cNvPicPr><a:picLocks noChangeAspect="1"/></xdr:cNvPicPr></xdr:nvPicPr><xdr:blipFill><a:blip r:embed="rId${i+1}"/><a:stretch><a:fillRect/></a:stretch></xdr:blipFill><xdr:spPr><a:xfrm><a:off x="0" y="0"/><a:ext cx="7334250" cy="${height}"/></a:xfrm><a:prstGeom prst="rect"><a:avLst/></a:prstGeom></xdr:spPr></xdr:pic><xdr:clientData/>`;
+  anchor.innerHTML=`<xdr:from><xdr:col>0</xdr:col><xdr:colOff>0</xdr:colOff><xdr:row>${check.row-1}</xdr:row><xdr:rowOff>0</xdr:rowOff></xdr:from><xdr:to><xdr:col>3</xdr:col><xdr:colOff>0</xdr:colOff><xdr:row>${check.row+2}</xdr:row><xdr:rowOff>0</xdr:rowOff></xdr:to><xdr:pic><xdr:nvPicPr><xdr:cNvPr id="${i+1}" name="Figure ${i+1}" descr="Figure ${i+1}"/><xdr:cNvPicPr><a:picLocks noChangeAspect="1"/></xdr:cNvPicPr></xdr:nvPicPr><xdr:blipFill><a:blip r:embed="rId${i+1}"/><a:stretch><a:fillRect/></a:stretch></xdr:blipFill><xdr:spPr><a:xfrm><a:off x="0" y="0"/><a:ext cx="5343525" cy="777240"/></a:xfrm><a:prstGeom prst="rect"><a:avLst/></a:prstGeom></xdr:spPr></xdr:pic><xdr:clientData/>`;
   drawing.documentElement.appendChild(anchor);
   const rel=dr.createElementNS(P,'Relationship');rel.setAttribute('Id','rId'+(i+1));rel.setAttribute('Type',R+'/image');rel.setAttribute('Target','../media/'+name);dr.documentElement.appendChild(rel);
  }
@@ -195,26 +194,27 @@ export async function createVariant(baseBytes,plan){
  }
  const reference=b.docs.get('Reference');for(const c of all(reference,'c'))first(c,'f')?.remove();put(reference,'C15',0);
  const solution=freshSheet(first(b.docs.get('Solution'),'sheetPr')?.getAttribute('codeName')??'Sheet5');
+ const mergeRanges=['B1:C1','B2:C2','B3:C3','B5:C5','A6:C6'];
  const st={normal:addStyle(b),heading:addStyle(b,{bold:true,fill:'E3ECEF'}),label:addStyle(b,{wrap:true}),input:addStyle(b,{unlock:true,fill:'FFF3C9'}),number:addStyle(b,{numFmt:4,unlock:true,fill:'FFF3C9'}),rate:addStyle(b,{numFmt:10,unlock:true,fill:'FFF3C9'}),stamp:addStyle(b,{numFmt:22})};
  put(solution,'A1','Last Name',st.normal);put(solution,'A2','First Name',st.normal);put(solution,'A3','ID',st.normal);
- for(const a of ['B1','B2','B3'])put(solution,a,a==='B3'?plan.assignedId:null,st.input);
+ for(let row=1;row<=3;row++)for(const col of ['B','C'])put(solution,col+row,row===3&&col==='B'?plan.assignedId:null,st.input);
  // The original macro writes a timestamp only when both A4 and B4 are empty.
  put(solution,'A4',null,st.normal);put(solution,'B4',null,st.stamp);
  put(solution,'A5','Assignment checksum',st.normal);put(solution,'B5',null,addStyle(b,{size:8,wrap:true}));
- put(solution,'A6',plan.course+' — '+plan.id,st.heading);put(solution,'B6','Version '+plan.id,st.heading);
- for(const q of plan.questions){const row=Number(q.cell.slice(1));put(solution,'A'+row,q.label,st.label);put(solution,q.cell,null,q.kind==='month'?st.input:q.kind==='return'||q.kind==='warranty'?st.rate:st.number);}
+ for(const col of ['A','B','C'])put(solution,col+'6',col==='A'?plan.course+' — '+plan.id:null,st.heading);
+ for(const q of plan.questions){const row=Number(q.cell.slice(1));for(const col of ['A','B'])put(solution,col+row,col==='A'?q.label:null,st.label);mergeRanges.push('A'+row+':B'+row);put(solution,q.cell,null,q.kind==='month'?st.input:q.kind==='return'||q.kind==='warranty'?st.rate:st.number);}
  for(const check of plan.checks){
   put(solution,'A'+(check.row-1),null,st.normal);
-  // Fix image-area row heights, including accommodation text, so diagrams do
-  // not overlap the answer boxes when Excel uses its default row height.
-  for(let r=check.row;r<check.row+7;r++)put(solution,'A'+r,null,st.normal);
-  for(const box of check.boxes){put(solution,box.labelCell,box.label||null,st.normal);put(solution,box.cell,null,addStyle(b,{unlock:true,fill:box.hex,bold:true}));}
-  if(check.accessible)put(solution,'A'+(check.row+5),`Type ${check.answer} in the ${COLORS[check.target].name} box (${check.target+1}); leave the others empty.`,st.label);
+  for(let r=check.row;r<check.row+(check.accessible?5:3);r++)put(solution,'A'+r,null,st.normal);
+  for(const box of check.boxes){if(box.labelCell)put(solution,box.labelCell,box.label||null,st.normal);put(solution,box.cell,null,addStyle(b,{unlock:true,fill:box.hex,bold:true}));}
+  if(check.accessible){const row=check.row+3;put(solution,'A'+row,`Type ${check.answer} in the ${COLORS[check.target].name} box (${check.target+1}); leave the others empty.`,st.label);mergeRanges.push('A'+row+':C'+row);}
  }
- const frozen=all(solution,'row');for(const row of frozen){const n=Number(row.getAttribute('r'));row.setAttribute('ht',plan.questions.some(q=>Number(q.cell.slice(1))===n)?'34':'24');row.setAttribute('customHeight','1');}
+ const frozen=all(solution,'row');for(const row of frozen){const n=Number(row.getAttribute('r'));row.setAttribute('ht',plan.questions.some(q=>Number(q.cell.slice(1))===n)||plan.checks.some(c=>c.accessible&&n===c.row+3)?'34':plan.checks.some(c=>n>=c.row&&n<c.row+3)?'20.4':'24');row.setAttribute('customHeight','1');}
  const protection=solution.createElementNS(M,'sheetProtection');protection.setAttribute('sheet','1');solution.documentElement.appendChild(protection);
+ const merges=solution.createElementNS(M,'mergeCells');merges.setAttribute('count',String(mergeRanges.length));for(const ref of mergeRanges){const merge=solution.createElementNS(M,'mergeCell');merge.setAttribute('ref',ref);merges.appendChild(merge);}solution.documentElement.appendChild(merges);
  const checks=await addPictures(b,solution,plan.checks);
- const immutable=[...cells(solution,[]).entries()].filter(([a])=>(a[0]==='A'&&a!=='A4')||a==='B6').map(([a,c])=>[a,c.value]).sort((a,b)=>a[0].localeCompare(b[0]));
+ const mutableCells=new Set([...plan.questions.map(q=>q.cell),...plan.checks.flatMap(c=>c.boxes.map(box=>box.cell))]);
+ const immutable=[...cells(solution,[]).entries()].filter(([a])=>!mutableCells.has(a)&&((a[0]==='A'&&a!=='A4')||a==='B6')).map(([a,c])=>[a,c.value]).sort((a,b)=>a[0].localeCompare(b[0]));
  const meta={schema:SCHEMA,id:plan.id,course:plan.course,seed:plan.seed,labels:plan.labels,questions:plan.questions,factors:plan.factors,assignedId:plan.assignedId,checks:checks.map(({answer,target,imageFile,...rest})=>rest),immutable};
  const sourceDigest=await sha(stable(data));
  const checksum=await sha(stable({meta,sourceDigest,images:checks.map(c=>c.imageSha)}));

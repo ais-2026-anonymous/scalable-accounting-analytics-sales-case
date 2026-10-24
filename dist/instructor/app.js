@@ -1,4 +1,4 @@
-import {SCHEMA,makePlan,createVariant,challengeImage,moveQuestion} from './workbook-engine.js?v=9';
+import {SCHEMA,makePlan,createVariant,challengeImage,moveQuestion} from './workbook-engine.js?v=10';
 import {saveIssued} from './issued-store.js';
 const VERSION_COUNT=1;
 const $=id=>document.getElementById(id),escape=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
