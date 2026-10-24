@@ -40,11 +40,11 @@ export function makePlan(options,index=0){
  const imageCount=Number(options.imageCount??1);
  let nextFigureRow=39;
  const checks=Array.from({length:imageCount},(_,i)=>{
-  const row=nextFigureRow,firstBox=row+7+integer(r,0,2),secondBox=firstBox+integer(r,3,5),boxRows=[firstBox,secondBox,secondBox+integer(r,3,5)];
-  nextFigureRow=boxRows[2]+4;
+  const row=nextFigureRow,entryRow=row+7+integer(r,0,2);
+  nextFigureRow=entryRow+4;
   // Challenge answers are independent of the public, reproducible variant seed.
   const entropy=new Uint32Array(2);crypto.getRandomValues(entropy);const target=entropy[1]%3;
-  return {id:'image-'+(i+1),row,boxes:COLORS.map((c,j)=>({name:c.name,cell:'B'+boxRows[j],labelCell:'A'+boxRows[j],label:'',hex:c.hex})),target,answer:String(10000+entropy[0]%90000),style:options.imageStyle??'path',accessible:!!options.accessible};
+  return {id:'image-'+(i+1),row,boxes:COLORS.map((c,j)=>({name:c.name,cell:['B','D','F'][j]+entryRow,labelCell:['A','C','E'][j]+entryRow,label:'',hex:c.hex})),target,answer:String(10000+entropy[0]%90000),style:options.imageStyle??'path',accessible:!!options.accessible};
  });
  const factors=options.scale?{unitsA:integer(r,2,5),unitsB:integer(r,2,5),priceA:integer(r,1,3),priceB:integer(r,1,3)}:{unitsA:1,unitsB:1,priceA:1,priceB:1};
  return {schema:SCHEMA,id,course:options.course,seed:options.seed,labels,questions,checks,factors,issuedAt:new Date().toISOString(),assignedId:options.studentIds?.[index]??''};
@@ -130,7 +130,7 @@ function addStyle(b,{numFmt=0,fill=null,bold=false,unlock=false,wrap=false,size=
  xf.innerHTML=`<alignment vertical="center"${wrap?' wrapText="1"':''}/><protection locked="${unlock?0:1}"/>`;xfs.appendChild(xf);xfs.setAttribute('count',xfs.children.length);return id;
 }
 function freshSheet(codeName='Sheet5'){
- return xml(`<worksheet xmlns="${M}" xmlns:r="${R}"><sheetPr codeName="${codeName}"/><dimension ref="A1:B100"/><sheetViews><sheetView showGridLines="0" zoomScale="100" workbookViewId="0"/></sheetViews><sheetFormatPr defaultRowHeight="21"/><cols><col min="1" max="1" width="88" customWidth="1"/><col min="2" max="2" width="24" customWidth="1"/></cols><sheetData/></worksheet>`);
+ return xml(`<worksheet xmlns="${M}" xmlns:r="${R}"><sheetPr codeName="${codeName}"/><dimension ref="A1:F100"/><sheetViews><sheetView showGridLines="0" zoomScale="100" workbookViewId="0"/></sheetViews><sheetFormatPr defaultRowHeight="21"/><cols><col min="1" max="1" width="88" customWidth="1"/><col min="2" max="2" width="24" customWidth="1"/><col min="3" max="3" width="4" customWidth="1"/><col min="4" max="4" width="24" customWidth="1"/><col min="5" max="5" width="4" customWidth="1"/><col min="6" max="6" width="24" customWidth="1"/></cols><sheetData/></worksheet>`);
 }
 export function challengeImage(check){
  if(check.style==='path')return pathImage(check);

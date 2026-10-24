@@ -8,14 +8,15 @@ test('issued question maps cover all ten computations without duplicate answer c
 test('same seed replays question map and scaling; image answer is separate from public seed',()=>{
  const a=makePlan(options,0),b=makePlan(options,0),c=makePlan(options,1);assert.deepEqual(a.questions,b.questions);assert.deepEqual(a.factors,b.factors);assert.notDeepEqual(a.questions,c.questions);assert.ok(a.checks.every(x=>/^\d{5}$/.test(x.answer)));assert.notEqual(a.id,c.id);
 });
-test('spaced entry cells and subsequent figures cannot overlap',()=>{
+test('three horizontal entry cells share one row and cannot overlap subsequent figures',()=>{
  for(let i=0;i<30;i++){
   const p=makePlan(options,i),all=p.checks.flatMap(c=>c.boxes.map(b=>b.cell));
   assert.equal(new Set(all).size,all.length);
   for(let j=0;j<p.checks.length;j++){
    const rows=p.checks[j].boxes.map(b=>Number(b.cell.slice(1)));
    assert.ok(rows[0]>=p.checks[j].row+7);
-   assert.ok(rows[1]-rows[0]>=3&&rows[2]-rows[1]>=3);
+   assert.equal(new Set(rows).size,1);
+   assert.deepEqual(p.checks[j].boxes.map(b=>b.cell.match(/^[A-Z]+/)[0]),['B','D','F']);
    if(j+1<p.checks.length)assert.ok(rows[2]<p.checks[j+1].row);
    assert.ok(rows[2]<=100);
   }

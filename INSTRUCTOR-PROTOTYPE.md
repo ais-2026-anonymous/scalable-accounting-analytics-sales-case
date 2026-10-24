@@ -153,9 +153,9 @@ Visual instruction label was present.
 
 The single-workbook generator omits Blue/Gold/Violet labels in both the
 worksheet and default diagram legend. Color swatches replace words in the
-legend. Entry cells are separated by two to four blank rows, with a varying
-initial gap. A second figure starts after all three preceding cells to avoid
-overlap. The private grading record retains the exact locations. This spacing
+legend. The three entry cells share the first entry row below the picture, in
+columns B, D and F, with blank spacer columns C and E. A second figure starts
+after that entry row to avoid overlap. The private grading record retains the exact locations. This spacing
 is a layout variation, not a validated way to confuse or detect AI.
 
 Both Follow the line and Enter that endpoint’s number sentences have been
@@ -168,3 +168,8 @@ Leave the other boxes empty and START. The path starts at a filled circle; the
 number/color styles contain only a number and color swatch. Student directions
 are supplied separately. The explicit worksheet accommodation option remains
 off by default.
+
+Current horizontal layout: each figure uses one entry row for all three colors.
+The entry columns B, D and F have equal widths, separated by narrow blank
+columns C and E. Technical answer cells and identity fields are unchanged.
+Exact coordinates are retained in the private grading record.
