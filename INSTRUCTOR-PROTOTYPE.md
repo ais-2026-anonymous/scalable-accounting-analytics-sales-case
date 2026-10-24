@@ -6,15 +6,16 @@ graded in the instructor tool with their original receipt.
 
 ## Use
 
-1. Open the instructor page. Use the supplied original sales-case `.xlsm`, or
-   upload an ungenerated copy of that same workbook.
-2. Choose the course, assignment code, seed and 1–12 versions. Select question
+1. Open the instructor page. The original sales-case `.xlsm` is bundled with the
+   website; no template upload is needed.
+2. Choose the course, assignment code and seed. Each batch contains five versions. Select question
    shuffling, product codes, question months, source-data scaling and one or two
    image checks. Optionally assign one student ID per version.
-3. Preview every version. The arrow buttons move a question and update its answer
+3. Optionally preview every version. The arrow buttons move a question and update its answer
    cell map. Choose a clear image or light background lines; a plain-text
    accommodation is available.
-4. Generate and download the instructor package. Distribute only `workbooks/*.xlsm`.
+4. Click **Generate five workbooks** directly, or after reviewing the preview,
+   and download the instructor package. Distribute only `workbooks/*.xlsm`.
    Retain `INSTRUCTOR_ONLY/Receipt.json` and the checksum CSV privately.
 5. Students open the workbook in desktop Excel, use its original **Generate Data**
    button once, complete the designated Solution cells and the image instructions
@@ -34,6 +35,11 @@ The original workbook is never modified. The browser starts from a ZIP copy,
 retains `xl/vbaProject.bin` and the native form-control parts byte for byte, and
 patches the worksheet XML. This path preserves native VBA and its Generate Data
 button, which the general spreadsheet export API does not export.
+
+Every issued copy resets the cover as the active sheet, with Solution, Sales,
+Warranties & Returns and Reference hidden, no locked copies yet, and a blank
+generation timestamp. The original VBA/button remain unchanged. Students press
+Generate Data in Excel to unhide and prepare their working sheets.
 
 The supplied workbook's cached simulation data are frozen before issue. Optional
 seeded integer factors scale each product's units and claims together, and scale

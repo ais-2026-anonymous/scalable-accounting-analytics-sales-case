@@ -154,6 +154,11 @@ async function addPictures(b,solution,checks){
 export async function createVariant(baseBytes,plan){
  const b=await openBook(baseBytes),baseVba=await sha(await b.z.file('xl/vbaProject.bin').async('uint8array'));
  for(const name of ['Title Page','Solution','Sales','Warranties & Returns','Reference'])if(!b.sheets.has(name))throw Error('Use the original ungenerated SalesSimulationSpring2026.xlsm base workbook.');
+ // Always issue a fresh student copy: only the original cover is visible.
+ for(const [name,sheet]of b.sheets)sheet.node.setAttribute('state',name==='Title Page'?'visible':'hidden');
+ const coverIndex=[...b.sheets.keys()].indexOf('Title Page');
+ for(const view of all(b.book,'workbookView')){view.setAttribute('activeTab',String(coverIndex));view.setAttribute('firstSheet','0');}
+ for(const [name,doc]of b.docs)for(const view of all(doc,'sheetView'))view.setAttribute('tabSelected',name==='Title Page'?'1':'0');
  // Read cached base data, then explicitly freeze it. No uncertain browser formula evaluation.
  for(const name of ['Sales','Warranties & Returns'])for(const c of all(b.docs.get(name),'c'))first(c,'f')?.remove();
  const originalSales=sourceRows(b,'Sales',3658),originalClaims=sourceRows(b,'Warranties & Returns',125,true),data=scaleRows(originalSales,originalClaims,plan.factors);
