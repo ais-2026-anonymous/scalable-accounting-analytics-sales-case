@@ -95,8 +95,9 @@ Clearing site storage removes records; the JSON archive restores them. Earlier
 private archives remain supported; old distributed files are not retroactively
 stripped of their embedded maps and should be replaced with newly generated copies.
 
-The default path diagram asks the student to follow a connected path from START
-to a numbered endpoint and match its symbol to one of three boxes. Extracting
+The default path diagram contains routes, a START marker, endpoint numbers,
+symbols and color swatches. Its image has no instructional sentences; provide
+student directions separately to explain tracing the route and using the swatches. Extracting
 text alone does not specify the selected endpoint. Clear-text and plain-text
 accommodation options remain available. This is a visual reasoning exercise,
 not a validated human/AI discriminator. No adversarial text, hidden instructions
@@ -139,7 +140,7 @@ Student-facing cue review: generated copies omit the Visual instruction heading
 and cover reminder about the figure. Drawing object names/descriptions and
 media filenames use neutral Figure labels; worksheet color labels are omitted. The instructor preview no longer exposes the expected response in alt text.
 The optional worksheet text equivalent remains an explicit accommodation. The
-image itself still contains directions for students. The grading definition is now
+image now omits instructional sentences; directions are supplied separately. The grading definition is now
 private to the instructor browser. Visible questions and figures still allow AI
 to infer tasks; no resistance to AI is claimed.
 
@@ -156,3 +157,8 @@ legend. Entry cells are separated by two to four blank rows, with a varying
 initial gap. A second figure starts after all three preceding cells to avoid
 overlap. The private grading record retains the exact locations. This spacing
 is a layout variation, not a validated way to confuse or detect AI.
+
+Both Follow the line and Enter that endpoint’s number sentences have been
+removed from default path images. The image is compacted to the remaining
+diagram, preserving its aspect ratio in Excel. START and the diagram data remain.
+The optional worksheet text equivalent remains available only when selected.

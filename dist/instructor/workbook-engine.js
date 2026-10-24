@@ -143,17 +143,16 @@ export function challengeImage(check){
  return c.toDataURL('image/png');
 }
 function pathImage(check){
- const c=document.createElement('canvas');c.width=1100;c.height=220;const x=c.getContext('2d'),r=seeded('path:'+check.answer);
- x.fillStyle='#F5F8FC';x.fillRect(0,0,1100,220);x.fillStyle='#233B44';x.font='bold 22px Arial';x.fillText('Follow the line from START to an endpoint.',18,27);
- x.font='19px Arial';x.fillText('Enter that endpoint’s number in the box matching its symbol. Leave the other boxes empty.',18,52);
- const ys=[87,132,177],middle=shuffle([0,1,2],r),ends=shuffle([0,1,2],r),start=integer(r,0,2),symbols=shuffle([0,1,2],r);
+ const c=document.createElement('canvas');c.width=1100;c.height=160;const x=c.getContext('2d'),r=seeded('path:'+check.answer);
+ x.fillStyle='#F5F8FC';x.fillRect(0,0,1100,160);
+ const ys=[27,72,117],middle=shuffle([0,1,2],r),ends=shuffle([0,1,2],r),start=integer(r,0,2),symbols=shuffle([0,1,2],r);
  const numbers=Array.from({length:3},(_,i)=>i===ends[start]?check.answer:String(10000+((Number(check.answer)+12347*(i+1))%90000)));
  // Equal-weight paths and symbols require relational interpretation, beyond
  // simply extracting a printed answer. No resistance to vision AI is claimed.
  for(let i=0;i<3;i++){x.strokeStyle='#425C68';x.lineWidth=2;x.beginPath();x.moveTo(126,ys[i]);x.lineTo(420,ys[middle[i]]);x.lineTo(760,ys[ends[i]]);x.stroke();}
  function symbol(which,px,py,size=12){x.beginPath();if(which===0)x.arc(px,py,size,0,Math.PI*2);if(which===1){x.moveTo(px,py-size);x.lineTo(px+size,py+size);x.lineTo(px-size,py+size);x.closePath();}if(which===2){x.moveTo(px,py-size);x.lineTo(px+size,py);x.lineTo(px,py+size);x.lineTo(px-size,py);x.closePath();}x.stroke();}
  x.font='bold 20px Arial';for(let i=0;i<3;i++){x.fillStyle='#F5F8FC';x.fillRect(16,ys[i]-15,110,30);x.fillStyle='#233B44';x.fillText(i===start?'START':'○',22,ys[i]+7);x.fillStyle='#F5F8FC';x.fillRect(763,ys[i]-17,320,34);x.fillStyle='#233B44';x.font='bold 24px Arial';x.fillText(numbers[i],782,ys[i]+8);x.strokeStyle='#233B44';symbol(i===ends[start]?check.target:symbols.filter(v=>v!==check.target)[i<ends[start]?i:i-1],920,ys[i]);}
- for(let i=0;i<3;i++){x.strokeStyle='#233B44';symbol(i,220+i*275,207,8);x.fillStyle='#'+COLORS[i].hex;x.fillRect(240+i*275,197,90,20);x.strokeRect(240+i*275,197,90,20);}
+ for(let i=0;i<3;i++){x.strokeStyle='#233B44';symbol(i,220+i*275,147,8);x.fillStyle='#'+COLORS[i].hex;x.fillRect(240+i*275,137,90,20);x.strokeRect(240+i*275,137,90,20);}
  return c.toDataURL('image/png');
 }
 async function addPictures(b,solution,checks){
@@ -164,7 +163,7 @@ async function addPictures(b,solution,checks){
   b.z.file('xl/media/'+name,bytes);items.push({...check,imageSha:await sha(bytes),imageFile:name,responseDigest:await responseDigest(check.boxes.map((_,i)=>i===check.target?check.answer:''))});
   const anchor=drawing.createElementNS(X,'xdr:oneCellAnchor');
   for(const [prefix,ns]of [['xdr',X],['a',A],['r',R]])anchor.setAttributeNS('http://www.w3.org/2000/xmlns/','xmlns:'+prefix,ns);
-  const height=check.style==='path'?1466850:1133475;
+  const height=check.style==='path'?1066800:1133475;
   anchor.innerHTML=`<xdr:from><xdr:col>0</xdr:col><xdr:colOff>0</xdr:colOff><xdr:row>${check.row-1}</xdr:row><xdr:rowOff>0</xdr:rowOff></xdr:from><xdr:ext cx="7334250" cy="${height}"/><xdr:pic><xdr:nvPicPr><xdr:cNvPr id="${i+1}" name="Figure ${i+1}" descr="Figure ${i+1}"/><xdr:cNvPicPr><a:picLocks noChangeAspect="1"/></xdr:cNvPicPr></xdr:nvPicPr><xdr:blipFill><a:blip r:embed="rId${i+1}"/><a:stretch><a:fillRect/></a:stretch></xdr:blipFill><xdr:spPr><a:xfrm><a:off x="0" y="0"/><a:ext cx="7334250" cy="${height}"/></a:xfrm><a:prstGeom prst="rect"><a:avLst/></a:prstGeom></xdr:spPr></xdr:pic><xdr:clientData/>`;
   drawing.documentElement.appendChild(anchor);
   const rel=dr.createElementNS(P,'Relationship');rel.setAttribute('Id','rId'+(i+1));rel.setAttribute('Type',R+'/image');rel.setAttribute('Target','../media/'+name);dr.documentElement.appendChild(rel);
