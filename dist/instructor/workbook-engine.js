@@ -38,11 +38,13 @@ export function makePlan(options,index=0){
  if(options.shuffle)questions=shuffle(questions,r);
  questions=questions.map((q,i)=>({...q,cell:'B'+(8+i*3),label:`${String(i+1).padStart(2,'0')}. ${q.label}`}));
  const imageCount=Number(options.imageCount??1);
+ let nextFigureRow=39;
  const checks=Array.from({length:imageCount},(_,i)=>{
-  const row=39+i*15;
+  const row=nextFigureRow,firstBox=row+7+integer(r,0,2),secondBox=firstBox+integer(r,3,5),boxRows=[firstBox,secondBox,secondBox+integer(r,3,5)];
+  nextFigureRow=boxRows[2]+4;
   // Challenge answers are independent of the public, reproducible variant seed.
   const entropy=new Uint32Array(2);crypto.getRandomValues(entropy);const target=entropy[1]%3;
-  return {id:'image-'+(i+1),row,boxes:COLORS.map((c,j)=>({name:c.name,cell:'B'+(row+7+j*2),labelCell:'A'+(row+7+j*2),label:c.name,hex:c.hex})),target,answer:String(10000+entropy[0]%90000),style:options.imageStyle??'path',accessible:!!options.accessible};
+  return {id:'image-'+(i+1),row,boxes:COLORS.map((c,j)=>({name:c.name,cell:'B'+boxRows[j],labelCell:'A'+boxRows[j],label:'',hex:c.hex})),target,answer:String(10000+entropy[0]%90000),style:options.imageStyle??'path',accessible:!!options.accessible};
  });
  const factors=options.scale?{unitsA:integer(r,2,5),unitsB:integer(r,2,5),priceA:integer(r,1,3),priceB:integer(r,1,3)}:{unitsA:1,unitsB:1,priceA:1,priceB:1};
  return {schema:SCHEMA,id,course:options.course,seed:options.seed,labels,questions,checks,factors,issuedAt:new Date().toISOString(),assignedId:options.studentIds?.[index]??''};
@@ -128,7 +130,7 @@ function addStyle(b,{numFmt=0,fill=null,bold=false,unlock=false,wrap=false,size=
  xf.innerHTML=`<alignment vertical="center"${wrap?' wrapText="1"':''}/><protection locked="${unlock?0:1}"/>`;xfs.appendChild(xf);xfs.setAttribute('count',xfs.children.length);return id;
 }
 function freshSheet(codeName='Sheet5'){
- return xml(`<worksheet xmlns="${M}" xmlns:r="${R}"><sheetPr codeName="${codeName}"/><dimension ref="A1:B80"/><sheetViews><sheetView showGridLines="0" zoomScale="100" workbookViewId="0"/></sheetViews><sheetFormatPr defaultRowHeight="21"/><cols><col min="1" max="1" width="88" customWidth="1"/><col min="2" max="2" width="24" customWidth="1"/></cols><sheetData/></worksheet>`);
+ return xml(`<worksheet xmlns="${M}" xmlns:r="${R}"><sheetPr codeName="${codeName}"/><dimension ref="A1:B100"/><sheetViews><sheetView showGridLines="0" zoomScale="100" workbookViewId="0"/></sheetViews><sheetFormatPr defaultRowHeight="21"/><cols><col min="1" max="1" width="88" customWidth="1"/><col min="2" max="2" width="24" customWidth="1"/></cols><sheetData/></worksheet>`);
 }
 export function challengeImage(check){
  if(check.style==='path')return pathImage(check);
@@ -136,7 +138,7 @@ export function challengeImage(check){
  x.fillStyle='#F5F8FC';x.fillRect(0,0,c.width,c.height);x.strokeStyle='#CBD6DE';x.lineWidth=3;x.strokeRect(2,2,c.width-4,c.height-4);
  if(check.style==='light'){const r=seeded(check.answer);for(let i=0;i<16;i++){x.strokeStyle=i%2?'#DBE6E9':'#E1DFEA';x.lineWidth=1;x.beginPath();x.moveTo(r()*1100,r()*170);x.bezierCurveTo(r()*1100,r()*170,r()*1100,r()*170,r()*1100,r()*170);x.stroke();}}
  x.fillStyle='#233B44';x.font='bold 25px Arial';x.fillText('Reference',30,40);
- x.font='31px Arial';x.fillText(`Type ${check.answer} in the ${COLORS[check.target].name.toUpperCase()} box (${check.target+1}) below.`,30,92);
+ x.font='31px Arial';x.fillText(`Type ${check.answer} in the`,30,92);x.fillStyle='#'+COLORS[check.target].hex;x.fillRect(355,66,80,32);x.strokeRect(355,66,80,32);x.fillStyle='#233B44';x.fillText('cell below.',455,92);
  x.font='24px Arial';x.fillText('Leave the other two boxes empty.',30,137);
  return c.toDataURL('image/png');
 }
@@ -151,7 +153,7 @@ function pathImage(check){
  for(let i=0;i<3;i++){x.strokeStyle='#425C68';x.lineWidth=2;x.beginPath();x.moveTo(126,ys[i]);x.lineTo(420,ys[middle[i]]);x.lineTo(760,ys[ends[i]]);x.stroke();}
  function symbol(which,px,py,size=12){x.beginPath();if(which===0)x.arc(px,py,size,0,Math.PI*2);if(which===1){x.moveTo(px,py-size);x.lineTo(px+size,py+size);x.lineTo(px-size,py+size);x.closePath();}if(which===2){x.moveTo(px,py-size);x.lineTo(px+size,py);x.lineTo(px,py+size);x.lineTo(px-size,py);x.closePath();}x.stroke();}
  x.font='bold 20px Arial';for(let i=0;i<3;i++){x.fillStyle='#F5F8FC';x.fillRect(16,ys[i]-15,110,30);x.fillStyle='#233B44';x.fillText(i===start?'START':'○',22,ys[i]+7);x.fillStyle='#F5F8FC';x.fillRect(763,ys[i]-17,320,34);x.fillStyle='#233B44';x.font='bold 24px Arial';x.fillText(numbers[i],782,ys[i]+8);x.strokeStyle='#233B44';symbol(i===ends[start]?check.target:symbols.filter(v=>v!==check.target)[i<ends[start]?i:i-1],920,ys[i]);}
- x.font='17px Arial';for(let i=0;i<3;i++){x.strokeStyle='#233B44';symbol(i,220+i*275,207,8);x.fillStyle='#233B44';x.fillText('= '+COLORS[i].name+' box',238+i*275,213);}
+ for(let i=0;i<3;i++){x.strokeStyle='#233B44';symbol(i,220+i*275,207,8);x.fillStyle='#'+COLORS[i].hex;x.fillRect(240+i*275,197,90,20);x.strokeRect(240+i*275,197,90,20);}
  return c.toDataURL('image/png');
 }
 async function addPictures(b,solution,checks){
@@ -208,7 +210,7 @@ export async function createVariant(baseBytes,plan){
   // Fix image-area row heights, including accommodation text, so diagrams do
   // not overlap the answer boxes when Excel uses its default row height.
   for(let r=check.row;r<check.row+7;r++)put(solution,'A'+r,null,st.normal);
-  for(const box of check.boxes){put(solution,box.labelCell,box.label,st.normal);put(solution,box.cell,null,addStyle(b,{unlock:true,fill:box.hex,bold:true}));}
+  for(const box of check.boxes){put(solution,box.labelCell,box.label||null,st.normal);put(solution,box.cell,null,addStyle(b,{unlock:true,fill:box.hex,bold:true}));}
   if(check.accessible)put(solution,'A'+(check.row+5),`Type ${check.answer} in the ${COLORS[check.target].name} box (${check.target+1}); leave the others empty.`,st.label);
  }
  const frozen=all(solution,'row');for(const row of frozen){const n=Number(row.getAttribute('r'));row.setAttribute('ht',plan.questions.some(q=>Number(q.cell.slice(1))===n)?'34':'24');row.setAttribute('customHeight','1');}

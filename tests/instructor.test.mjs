@@ -8,6 +8,19 @@ test('issued question maps cover all ten computations without duplicate answer c
 test('same seed replays question map and scaling; image answer is separate from public seed',()=>{
  const a=makePlan(options,0),b=makePlan(options,0),c=makePlan(options,1);assert.deepEqual(a.questions,b.questions);assert.deepEqual(a.factors,b.factors);assert.notDeepEqual(a.questions,c.questions);assert.ok(a.checks.every(x=>/^\d{5}$/.test(x.answer)));assert.notEqual(a.id,c.id);
 });
+test('spaced entry cells and subsequent figures cannot overlap',()=>{
+ for(let i=0;i<30;i++){
+  const p=makePlan(options,i),all=p.checks.flatMap(c=>c.boxes.map(b=>b.cell));
+  assert.equal(new Set(all).size,all.length);
+  for(let j=0;j<p.checks.length;j++){
+   const rows=p.checks[j].boxes.map(b=>Number(b.cell.slice(1)));
+   assert.ok(rows[0]>=p.checks[j].row+7);
+   assert.ok(rows[1]-rows[0]>=3&&rows[2]-rows[1]>=3);
+   if(j+1<p.checks.length)assert.ok(rows[2]<p.checks[j+1].row);
+   assert.ok(rows[2]<=100);
+  }
+ }
+});
 test('scaling preserves lagged unit rates, missing observations and clearance price ratios',()=>{
  const originalSales=[['2012-01-01',10,100,20,400],['2012-02-01',10,50,20,200]],claims=[['2012-02',1,null,2,null]],f={unitsA:3,unitsB:2,priceA:2,priceB:3};
  const d=scaleRows(originalSales,claims,f);assert.equal(d.claims[0][1]/d.sales[0][1],.1);assert.equal(d.claims[0][3]/d.sales[0][3],.1);assert.equal(d.claims[0][2],null);assert.equal((d.sales[1][2]/d.sales[1][1])/(d.sales[0][2]/d.sales[0][1]),.5);assert.equal(d.sales[0][2],600);

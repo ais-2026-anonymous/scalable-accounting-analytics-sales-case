@@ -1,4 +1,4 @@
-import {verifySubmission} from '../instructor/workbook-engine.js?v=5';
+import {verifySubmission} from '../instructor/workbook-engine.js?v=6';
 import {requireRecordedChecksum} from './verification-policy.js?v=2';
 import {getIssued} from '../instructor/issued-store.js';
 const $=id=>document.getElementById(id),escape=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));

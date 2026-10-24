@@ -65,7 +65,7 @@ The SHA-256 assignment checksum binds:
 - The canonical values of both protected original source tables.
 - The bytes, count and locations of the instruction images.
 
-The verifier also checks the displayed checksum, question labels, labeled box
+The verifier also checks the displayed checksum, question labels, entry-cell
 colors, required generated/protected sheets and the absence of merged answer
 boxes. The existing Python grader checks identity fields, the frozen locked
 timestamp and the issued ten numerical answers. Uncached formulas remain
@@ -137,8 +137,7 @@ retained 6/10 technical points and returned 0/1 image checks.
 
 Student-facing cue review: generated copies omit the Visual instruction heading
 and cover reminder about the figure. Drawing object names/descriptions and
-media filenames use neutral Figure labels; color labels contain only the color
-name. The instructor preview no longer exposes the expected response in alt text.
+media filenames use neutral Figure labels; worksheet color labels are omitted. The instructor preview no longer exposes the expected response in alt text.
 The optional worksheet text equivalent remains an explicit accommodation. The
 image itself still contains directions for students. The grading definition is now
 private to the instructor browser. Visible questions and figures still allow AI
@@ -150,3 +149,10 @@ scoring and 1/1 versus 0/1 image scoring. All five workbooks ran the native macr
 in Excel. ZIP inspection of all five issued files and a completed Excel save
 confirmed no grading-map XML, issuer seed, response commitment or redundant
 Visual instruction label was present.
+
+The single-workbook generator omits Blue/Gold/Violet labels in both the
+worksheet and default diagram legend. Color swatches replace words in the
+legend. Entry cells are separated by two to four blank rows, with a varying
+initial gap. A second figure starts after all three preceding cells to avoid
+overlap. The private grading record retains the exact locations. This spacing
+is a layout variation, not a validated way to confuse or detect AI.
